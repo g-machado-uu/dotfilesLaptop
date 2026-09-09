@@ -1,0 +1,9 @@
+# Runtime state that should not be tracked
+*.log
+*.bak
+*~
+.DS_Store
+
+# Caches that some of these tools drop into their config directories
+nvim/.netrwhist
+yazi/*.cache

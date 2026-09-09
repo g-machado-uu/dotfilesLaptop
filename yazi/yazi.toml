@@ -1,0 +1,12 @@
+[opener]
+vivaldi-new = [
+    { run = 'vivaldi --new-window "%s"', orphan = true, desc = "Vivaldi New Window" }
+]
+vivaldi = [
+    { run = 'vivaldi "%s"', orphan = true, desc = "Vivaldi" }
+]
+
+[open]
+prepend_rules = [
+    { url = "*.md", use = [ "edit", "vivaldi", "vivaldi-new"] },
+]
