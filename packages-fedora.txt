@@ -1,0 +1,129 @@
+# Packages for Fedora:
+#   sudo dnf install $(grep -v '^#' packages-fedora.txt)
+#
+# Enable these COPRs first:
+#   sudo dnf copr enable mineiro/hyprland            # Hyprland, hypr tools, awww, cliphist, uwsm
+#   sudo dnf copr enable errornointernet/quickshell
+#   sudo dnf copr enable erikreider/SwayNotificationCenter
+#   sudo dnf copr enable tofik/nwg-shell             # nwg-look
+#   sudo dnf copr enable komapro/nerd-fonts          # 0xProto Nerd Font
+#   sudo dnf copr enable lihaohong/yazi
+#   sudo dnf copr enable peterwu/rendezvous          # Bibata cursors
+#
+# Every name below was checked against those repos on Fedora 44.
+#
+# Not packaged, install by hand:
+#   matugen      cargo install matugen
+#   oh-my-posh   curl -s https://ohmyposh.dev/install.sh | bash -s -- -d ~/.local/bin
+#   nwg-displays python3 -m pip install --user git+https://github.com/nwg-piotr/nwg-displays
+#   kora icons   git clone --depth 1 https://github.com/bikass/kora.git, copy kora/kora to ~/.local/share/icons
+#   grimblast    from hyprwm/contrib (screenshot.sh uses it for some modes)
+#   flatpaks     flatpak install flathub org.gnome.Calculator com.tomjwatson.Emote
+
+# Hyprland and the hypr tools
+hyprland
+hyprlock
+hypridle
+hyprpicker
+hyprsunset
+hyprshutdown
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+uwsm
+
+# Shell, bar, notifications, launcher, wallpaper, colours
+quickshell
+SwayNotificationCenter
+rofi
+awww
+cliphist
+wl-clipboard
+libnotify
+
+# Qt and GTK
+qt5-qtwayland
+qt6-qtwayland
+qt5-qtgraphicaleffects
+qt6-qt5compat
+qt6-qtsvg
+qt6-qtvirtualkeyboard
+qt6-qtmultimedia
+qt6ct
+nwg-look
+gtk3
+gtk4
+gtk-layer-shell
+
+# Screenshots and text extraction
+grim
+slurp
+tesseract
+tesseract-langpack-eng
+ImageMagick
+
+# System tools the bar and scripts call
+brightnessctl
+pavucontrol
+blueman
+network-manager-applet
+nm-connection-editor
+NetworkManager-tui
+udiskie
+udisks2
+gvfs
+gvfs-mtp
+tumbler
+inotify-tools
+jq
+gum
+xclip
+libsecret
+
+# Terminal and shell
+kitty
+zsh
+fzf
+zoxide
+eza
+yazi
+neovim
+fastfetch
+btop
+htop
+figlet
+
+# Apps
+nautilus
+gnome-text-editor
+solaar
+flameshot
+
+# Fonts and themes
+0xproto-nerd-font
+fontawesome-fonts-all
+bibata-cursor-themes
+
+# To build matugen and nwg-displays
+cargo
+gcc
+openssl-devel
+pkgconf-pkg-config
+python3-pip
+python3-devel
+python3-setuptools
+python3-gobject
+gobject-introspection-devel
+cairo-gobject-devel
+libadwaita-devel
+
+# Tools
+stow
+git
+wget2-wget
+curl
+rsync
+unzip
+tar
+flatpak
+xdg-user-dirs
+lua

@@ -222,11 +222,6 @@ hl.bind(
 	{ description = "Open clipboard manager" }
 )
 hl.bind(
-	mainMod .. " + CTRL + T",
-	hl.dsp.exec_cmd("~/.config/waybar/themeswitcher.sh"),
-	{ description = "Open waybar theme switcher" }
-)
-hl.bind(
 	mainMod .. " + SHIFT + M",
 	hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-toggle-theme"),
 	{ description = "Toggle between light and dark mode" }
@@ -253,7 +248,7 @@ hl.bind(
 )
 hl.bind(
 	mainMod .. " + CTRL + L",
-	hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-power -l"),
+	hl.dsp.exec_cmd("pidof hypridle >/dev/null && loginctl lock-session || pidof hyprlock || hyprlock"),
 	{ description = "Lock Screen" }
 )
 hl.bind(
@@ -266,18 +261,12 @@ hl.bind(
 	hl.dsp.exec_cmd("qs -p ~/.config/quickshell/overview ipc call overview toggle"),
 	{ description = "Open Select Window Menu" }
 )
-hl.bind(
-	"CTRL + ALT + T",
-	hl.dsp.exec_cmd("~/.config/ml4w/themes/themes.sh"),
-	{ description = "Open Select Window Menu" }
-)
 
--- Example special workspace (scratchpad)
-hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special("magic"), { description = "Toggle special workspace magic" })
+-- Settings panel
 hl.bind(
 	mainMod .. " + SHIFT + S",
-	hl.dsp.exec_cmd("~/.config/ml4w/scripts/ml4w-toggle-scratchpad-window"),
-	{ description = "Toggle window in/out of special workspace magic" }
+	hl.dsp.exec_cmd("qs ipc call settings toggle"),
+	{ description = "Open Settings panel" }
 )
 
 -- Scroll through existing workspaces with mainMod + scroll

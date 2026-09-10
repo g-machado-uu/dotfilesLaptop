@@ -2,7 +2,6 @@
 
 import Quickshell
 import Quickshell.Io
-import "WelcomeApp"
 import "StatusbarApp"
 import "CustomTheme"
 
@@ -16,6 +15,5 @@ ShellRoot {
         }
     }
 
-    WelcomeWindow {}
     StatusbarWindow {}
 }

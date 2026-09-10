@@ -15,6 +15,7 @@ import qs.ClipboardApp
 import qs.NotificationsApp
 import qs.MediaApp
 import qs.WallpaperApp
+import qs.SettingsApp
 
 PanelWindow {
     id: root
@@ -546,6 +547,14 @@ PanelWindow {
     }
 
     IpcHandler {
+        target: "settings"
+        function toggle(): void { root.togglePanel("settings") }
+        function open(): void { root.openPanel = "settings" }
+        function close(): void { root.closePanel("settings") }
+        function isOpen(): bool { return root.openPanel === "settings" }
+    }
+
+    IpcHandler {
         target: "statusbar"
         function toggle(): void { root.setEnabled(!root.settings.bar.enabled) }
         // Named enable/disable rather than show/hide: "show" is a reserved
@@ -944,6 +953,23 @@ PanelWindow {
                 SidebarPanel {
                     isOpen: root.openPanel === "sidebar"
                     onCloseRequested: root.closePanel("sidebar")
+                }
+            }
+        }
+
+        BarDropdown {
+            id: settingsPanel
+            // Opened from the sidebar and by IPC, with no icon of its own, so it
+            // drops from the middle of the bar like the other wide panels.
+            anchorItem: pill
+            open: root.openPanel === "settings"
+            onDismissed: root.closePanel("settings")
+            panelWidth: 440
+            panelHeight: Math.min(640, root.screen.height - root.barHeight - 72)
+            panelContent: Component {
+                SettingsPanel {
+                    isOpen: root.openPanel === "settings"
+                    onCloseRequested: root.closePanel("settings")
                 }
             }
         }

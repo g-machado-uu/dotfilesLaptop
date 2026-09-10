@@ -24,26 +24,6 @@ hl.window_rule({
 	size = "700 600",
 })
 
--- ML4W Welcome App
-hl.window_rule({
-	name = "ml4w-welcome-app",
-	match = { title = "ML4W Welcome" },
-	float = true,
-	center = true,
-	pin = true,
-	size = "700 600",
-})
-
--- ML4W Settings App
-hl.window_rule({
-	name = "ml4w-settings-app",
-	match = { title = "ML4W Dotfiles Settings" },
-	float = true,
-	center = true,
-	pin = true,
-	size = "900 600",
-})
-
 -- Waypaper
 hl.window_rule({
 	name = "waypaper",

@@ -16,12 +16,3 @@ hl.layer_rule({
 	animation = "slide",
 })
 
--- ML4W Dotfiles Settings is a real toplevel (class org.quickshell), so it is
--- the compositor that animates it in. Match on the title to avoid catching
--- other Quickshell floating windows.
-hl.window_rule({
-	name = "ml4w-settings-fluid",
-	match = { class = "org.quickshell", title = "ML4W Dotfiles Settings" },
-	float = true,
-	animation = "popin 40%",
-})

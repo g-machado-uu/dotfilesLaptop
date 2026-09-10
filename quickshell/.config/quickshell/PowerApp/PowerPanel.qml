@@ -27,12 +27,26 @@ FocusScope {
     // Emitted when an action has been taken, so the bar can close the panel.
     signal actionTaken()
 
+    // Lock goes through logind so hypridle runs its own lock_cmd (hyprlock);
+    // with hypridle stopped (caffeine) there is nothing listening, so start
+    // hyprlock directly. Logout, reboot and power off go through hyprshutdown,
+    // which is how the Hyprland wiki says to leave Hyprland: it asks every app
+    // to close first, where exiting the compositor directly just kills them.
+    // If logging out leaves a black screen (NVIDIA with SDDM), add
+    // "--vt <n>" to the hyprshutdown calls, n being the VT SDDM runs on.
+    // Without hyprshutdown installed it falls back to the plain commands.
+    function graceful(label: string, postCmd: string, fallback: string): string {
+        let args = label === "" ? "" : " -t '" + label + "' --post-cmd '" + postCmd + "'"
+        return "if command -v hyprshutdown >/dev/null; then hyprshutdown" + args
+            + "; else " + fallback + "; fi"
+    }
+
     readonly property var commands: [
-        Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-power -l",
-        Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-power -s",
-        Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-power -e",
-        Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-power -r",
-        Quickshell.env("HOME") + "/.config/ml4w/scripts/ml4w-power -p"
+        "if pidof hypridle >/dev/null; then loginctl lock-session; else pidof hyprlock || hyprlock; fi",
+        "systemctl suspend",
+        graceful("", "", "hyprctl dispatch 'hl.dsp.exit()'"),
+        graceful("Restarting...", "reboot", "systemctl reboot"),
+        graceful("Shutting down...", "shutdown -P 0", "systemctl poweroff")
     ]
 
     function run(index: int): void {

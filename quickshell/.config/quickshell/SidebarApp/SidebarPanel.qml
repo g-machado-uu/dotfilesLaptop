@@ -203,18 +203,10 @@ Item {
             spacing: 10
 
             ML4WButton {
-                text: "Welcome"
-                onClicked: {
-                    root.close()
-                    Quickshell.execDetached(["bash", "-c", "qs ipc call welcome toggle"])
-                }
-            }
-            ML4WButton {
                 text: "Settings"
                 onClicked: {
                     root.close()
-                    // Quickshell.execDetached(["kitty", "--class", "dotfiles-floating", "-e", "ml4w-dotfiles-settings", "com.ml4w.dotfiles"])
-                    Quickshell.execDetached(["bash", "-c", "qs -p " + Quickshell.env("HOME") + "/.local/share/ml4w-dotfiles-settings/quickshell ipc call settings toggle"])
+                    Quickshell.execDetached(["qs", "ipc", "call", "settings", "open"])
                 }
             }
             ML4WButton {
@@ -557,57 +549,8 @@ Item {
                     visible: Mpris.players.values.length > 0
                 }
 
-                // --- STATUS BAR ENGINE ---
-                // Select which bar ML4W OS uses. The choice is persisted to
-                // ~/.config/ml4w/settings/statusbar (read by everything else
-                // here and by the toggle/reload scripts). On = Quickshell,
-                // Off = Waybar. Flipping it also applies the change live:
-                // it shows the selected bar and hides the other.
-                RowLayout {
-                    Layout.fillWidth: true
-                    Text { text: "Status Bar Engine"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
-                    Item { Layout.fillWidth: true }
-                    Text {
-                        text: engineSwitch.checked ? "Quickshell" : "Waybar"
-                        color: Theme.primary
-                        opacity: 0.7
-                        font.family: Theme.fontFamily
-                        font.pixelSize: 14
-                        Layout.rightMargin: 8
-                    }
-                    ML4WSwitch {
-                        id: engineSwitch
-                        property bool ready: false
-                        // Read the configured engine (defaults to waybar).
-                        Process {
-                            command: ["bash", "-c", "sb=$(tr -d '[:space:]' < ~/.config/ml4w/settings/statusbar 2>/dev/null); [ \"$sb\" = quickshell ] && echo 1 || echo 0"]
-                            running: root.isOpen
-                            stdout: StdioCollector {
-                                onStreamFinished: {
-                                    engineSwitch.checked = (this.text.trim() === "1")
-                                    engineSwitch.ready = true
-                                }
-                            }
-                        }
-                        onClicked: {
-                            if (!ready) return;
-                            // Persist the selection, then apply it live:
-                            // enable the chosen bar and disable the other.
-                            let cmd = checked
-                                ? "echo quickshell > ~/.config/ml4w/settings/statusbar; qs ipc call statusbar enable; touch ~/.config/ml4w/settings/waybar-disabled; " + Quickshell.env("HOME") + "/.config/waybar/launch.sh"
-                                : "echo waybar > ~/.config/ml4w/settings/statusbar; rm -f ~/.config/ml4w/settings/waybar-disabled; " + Quickshell.env("HOME") + "/.config/waybar/launch.sh; qs ipc call statusbar disable"
-                            console.log("Status Bar Engine cmd: " + cmd)
-                            Quickshell.execDetached(["bash", "-c", cmd])
-                        }
-                    }
-                    Item { implicitWidth: 28 }
-                }
-
                 // --- STATUS BAR ---
-                // Single toggle for whichever bar ML4W OS is configured to
-                // use (read from ~/.config/ml4w/settings/statusbar): either
-                // waybar or the quickshell statusbar. The scripts handle the
-                // per-bar specifics; this row only reflects/flips the state.
+                // Shows or hides the Quickshell bar ("enabled" in statusbar.json).
                 RowLayout {
                     Layout.fillWidth: true
                     Text { text: "Status Bar"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
@@ -615,19 +558,15 @@ Item {
                     ML4WSwitch {
                         id: statusbarSwitch
                         property bool ready: false
-                        property string activeBar: "waybar"
-                        // Read the active bar and its current on/off state in
-                        // one shot ("<bar> <0|1>"): for quickshell the
-                        // "enabled" flag in the master statusbar.json, for
-                        // waybar the presence of the waybar-disabled marker.
+                        // Read the "enabled" flag from the master file: the
+                        // ml4w-statusbar override when it exists, otherwise the
+                        // shipped statusbar.json.
                         Process {
                             id: statusbarStateProc
-                            command: ["bash", "-c", "sb=$(tr -d '[:space:]' < ~/.config/ml4w/settings/statusbar 2>/dev/null); [ -n \"$sb\" ] || sb=waybar; if [ \"$sb\" = quickshell ]; then f=~/.config/ml4w-statusbar/statusbar.json; [ -f \"$f\" ] || f=~/.config/ml4w/settings/statusbar.json; grep -q '\"enabled\"[[:space:]]*:[[:space:]]*false' \"$f\" && s=0 || s=1; else test -f ~/.config/ml4w/settings/waybar-disabled && s=0 || s=1; fi; echo \"$sb $s\""]
+                            command: ["bash", "-c", "f=~/.config/ml4w-statusbar/statusbar.json; [ -f \"$f\" ] || f=~/.config/ml4w/settings/statusbar.json; grep -q '\"enabled\"[[:space:]]*:[[:space:]]*false' \"$f\" && echo 0 || echo 1"]
                             stdout: StdioCollector {
                                 onStreamFinished: {
-                                    let parts = this.text.trim().split(" ")
-                                    statusbarSwitch.activeBar = parts[0]
-                                    statusbarSwitch.checked = (parts[1] === "1")
+                                    statusbarSwitch.checked = (this.text.trim() === "1")
                                     statusbarSwitch.ready = true
                                 }
                             }
@@ -649,11 +588,8 @@ Item {
                             // post-click position (rather than a blind toggle)
                             // so the switch always reflects the real bar state,
                             // even if the bar was toggled elsewhere meanwhile.
-                            let cmd = activeBar === "quickshell"
-                                ? (checked ? "qs ipc call statusbar enable"
-                                           : "qs ipc call statusbar disable")
-                                : (checked ? "rm -f ~/.config/ml4w/settings/waybar-disabled; " + Quickshell.env("HOME") + "/.config/waybar/launch.sh"
-                                           : "touch ~/.config/ml4w/settings/waybar-disabled; " + Quickshell.env("HOME") + "/.config/waybar/launch.sh")
+                            let cmd = checked ? "qs ipc call statusbar enable"
+                                              : "qs ipc call statusbar disable"
                             console.log("Status Bar cmd: " + cmd)
                             Quickshell.execDetached(["bash", "-c", cmd])
                         }
@@ -686,23 +622,6 @@ Item {
                                     // Reads the settings file and reloads the
                                     // matching bar.
                                     Quickshell.execDetached(["bash", "-c", "~/.config/ml4w/scripts/ml4w-reload-statusbar"])
-                                }
-                            }
-                            ML4WMenuItem {
-                                text: "Select Waybar Theme"
-                                visible: statusbarSwitch.activeBar === "waybar"
-                                height: visible ? implicitHeight : 0
-                                onClicked: {
-                                    Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/waybar/themeswitcher.sh"])
-                                }
-                            }
-                            ML4WMenuItem {
-                                text: "Edit Quicklinks"
-                                visible: statusbarSwitch.activeBar === "waybar"
-                                height: visible ? implicitHeight : 0
-                                onClicked: {
-                                    root.close()
-                                    Quickshell.execDetached(["gnome-text-editor", Quickshell.env("HOME") + "/.config/ml4w/settings/waybar-quicklinks.json"])
                                 }
                             }
                             ML4WMenuItem {
@@ -753,68 +672,6 @@ Item {
                             : "qs ipc call statusbar autoCollapse"
                             console.log("Statusbar Expanded cmd: " + ipcCmd)
                             Quickshell.execDetached(["bash", "-c", ipcCmd])
-                        }
-                    }
-                    Item { implicitWidth: 28 }
-                }
-
-                // --- DOCK ---
-                RowLayout {
-                    Layout.fillWidth: true
-                    Text { text: "Dock"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
-                    Item { Layout.fillWidth: true }
-                    ML4WSwitch {
-                        id: dockSwitch
-                        property bool ready: false
-                        Process {
-                            command: ["bash", "-c", "test -f ~/.config/ml4w/settings/dock-disabled && echo 0 || echo 1"]
-                            running: root.isOpen
-                            stdout: StdioCollector {
-                                onStreamFinished: {
-                                    console.log("Test for Dock: " + this.text.trim())
-                                    dockSwitch.checked = (this.text.trim() === "1")
-                                    dockSwitch.ready = true
-                                }
-                            }
-                        }
-                        onClicked: {
-                            if (!ready) return;
-                            let fileCmd = checked
-                            ? "rm -f ~/.config/ml4w/settings/dock-disabled"
-                            : "touch ~/.config/ml4w/settings/dock-disabled"
-                            console.log("Dock cmd: " + fileCmd)
-                            Quickshell.execDetached(["bash", "-c", fileCmd + "; " + Quickshell.env("HOME") + "/.config/nwg-dock-hyprland/launch.sh"])
-                        }
-                    }
-                    Item { implicitWidth: 28 }
-                }
-
-                // --- DOCK AUTOHIDE ---
-                RowLayout {
-                    Layout.fillWidth: true
-                    Text { text: "Dock Autohide"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
-                    Item { Layout.fillWidth: true }
-                    ML4WSwitch {
-                        id: dockAutohideSwitch
-                        property bool ready: false
-                        Process {
-                            command: ["bash", "-c", "test -f ~/.config/ml4w/settings/dock-autohide && echo 1 || echo 0"]
-                            running: root.isOpen
-                            stdout: StdioCollector {
-                                onStreamFinished: {
-                                    console.log("Test for Dock Autohide: " + this.text.trim())
-                                    dockAutohideSwitch.checked = (this.text.trim() === "1")
-                                    dockAutohideSwitch.ready = true
-                                }
-                            }
-                        }
-                        onClicked: {
-                            if (!ready) return;
-                            let fileCmd = checked
-                            ? "mkdir -p ~/.config/ml4w/settings && touch ~/.config/ml4w/settings/dock-autohide"
-                            : "rm -f ~/.config/ml4w/settings/dock-autohide"
-                            console.log("Dock Autohide cmd: " + fileCmd)
-                            Quickshell.execDetached(["bash", "-c", fileCmd + "; " + Quickshell.env("HOME") + "/.config/nwg-dock-hyprland/launch.sh"])
                         }
                     }
                     Item { implicitWidth: 28 }
@@ -899,7 +756,7 @@ Item {
                         iconSrc: "../shared/icons/theme.svg"
                         onClicked: {
                             root.close()
-                            Quickshell.execDetached(["bash", "-c", Quickshell.env("HOME") + "/.config/ml4w/themes/themes.sh"])
+                            Quickshell.execDetached(["qs", "ipc", "call", "settings", "open"])
                         }
                     }
                     SettingsWheel {

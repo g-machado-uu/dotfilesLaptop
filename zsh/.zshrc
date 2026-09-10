@@ -75,14 +75,14 @@ alias clock='tty-clock'
 alias system='~/.config/ml4w/settings/systemmonitor'
 alias quick='~/.config/ml4w/bin/ml4w-quicklinks'
 alias wallpaper='~/.config/ml4w/bin/ml4w-wallpaper'
-alias settings='ml4w-dotfiles-settings com.ml4w.dotfiles'
+alias settings='qs ipc call settings toggle'
 alias venv='source ~/venv/bin/activate'
+alias bg='kitten @ set-background-opacity'
 # -----------------------------------------------------
 # ML4W Apps
 # -----------------------------------------------------
 
-alias ml4w='qs ipc call welcome toggle'
-alias ml4w-settings='qs -p ~/.local/share/ml4w-dotfiles-settings/quickshell ipc call settings toggle'
+alias ml4w-settings='qs ipc call settings toggle'
 alias ml4w-calendar='qs ipc call calendar toggle'
 alias ml4w-hyprland='flatpak run com.ml4w.hyprlandsettings'
 alias ml4w-sidebar='qs ipc call sidebar toggle'

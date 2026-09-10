@@ -1,0 +1,108 @@
+# Packages for Arch, for an AUR helper:
+#   paru -S --needed $(grep -v '^#' packages-arch.txt)
+# Based on ML4W 2.14.1's Arch lists, minus waybar, nwg-dock-hyprland and
+# hyprpaper, plus what this rice adds. Not tested on Arch from this machine.
+
+# Hyprland and the hypr tools
+hyprland
+hyprlock
+hypridle
+hyprpicker
+hyprsunset
+hyprshutdown
+xdg-desktop-portal-hyprland
+xdg-desktop-portal-gtk
+uwsm
+
+# Shell, bar, notifications, launcher, wallpaper, colours
+quickshell
+swaync
+rofi
+awww
+matugen
+cliphist
+wl-clipboard
+libnotify
+
+# Qt and GTK
+qt5-wayland
+qt6-wayland
+qt6-svg
+qt6-virtualkeyboard
+qt6-multimedia-ffmpeg
+qt6ct
+nwg-look
+nwg-displays
+gnome-themes-extra
+breeze
+polkit-gnome
+
+# Screenshots and text extraction
+grim
+slurp
+grimblast-git
+tesseract
+tesseract-data-eng
+imagemagick
+
+# System tools the bar and scripts call
+brightnessctl
+pavucontrol
+blueman
+network-manager-applet
+nm-connection-editor
+power-profiles-daemon
+pacman-contrib
+udiskie
+udisks2
+gvfs
+gvfs-mtp
+tumbler
+inotify-tools
+jq
+gum
+xclip
+libsecret
+
+# Terminal and shell
+kitty
+zsh
+fzf
+zoxide
+eza
+yazi
+neovim
+fastfetch
+btop
+htop
+figlet
+oh-my-posh-bin
+
+# Apps
+nautilus
+gnome-text-editor
+loupe
+solaar
+flameshot
+
+# Fonts and themes
+ttf-0xproto-nerd
+ttf-firacode-nerd
+ttf-jetbrains-mono-nerd
+otf-font-awesome
+kora-icon-theme
+bibata-cursor-theme-bin
+
+# Tools
+stow
+git
+wget
+curl
+rsync
+unzip
+tar
+flatpak
+xdg-user-dirs
+python-pip
+python-gobject
+python-screeninfo

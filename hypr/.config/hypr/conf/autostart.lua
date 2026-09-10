@@ -27,9 +27,6 @@ hl.on("hyprland.start", function()
 	-- Start listeners
 	hl.exec_cmd("~/.config/ml4w/listeners.sh --startall")
 
-	-- Start waybar
-	hl.exec_cmd(HOME .. "/.config/waybar/launch.sh")
-
 	-- Start polkit daemon
 	hl.exec_cmd("/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1")
 
@@ -39,7 +36,7 @@ hl.on("hyprland.start", function()
 	end
 
 	-- Autostart scripts
-	hl.exec_cmd("~/.config/ml4w/scripts/ml4w-autostart > ~/.mydotfiles/ml4w-autostart.log 2>&1")
+	hl.exec_cmd("~/.config/ml4w/scripts/ml4w-autostart > ~/.cache/ml4w-autostart.log 2>&1")
 
 	-- Load GTK settings
 	hl.exec_cmd("~/.config/hypr/scripts/gtk.sh")

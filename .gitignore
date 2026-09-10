@@ -11,3 +11,7 @@ yazi/*.cache
 # Leftovers from editing the Quickshell bar
 *.bkp
 StatusbarApp.backup-*/
+
+# Outro
+
+NOTIFICATIONS.md

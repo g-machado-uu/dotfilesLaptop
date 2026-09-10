@@ -121,27 +121,9 @@ run_matugen() {
     info "Matugen updated"
 }
 
-reload_waybar() {
-    if pgrep -x waybar >/dev/null; then
-        pkill -SIGUSR2 waybar
-        info "Waybar reloaded"
-    else
-        nohup bash -c "$HOME/.config/waybar/launch.sh" >/dev/null 2>&1 &
-        disown
-        info "Waybar launched"
-    fi
-}
-
-reload_nwg_dock() {
-    nohup bash -c "$HOME/.config/nwg-dock-hyprland/launch.sh" >/dev/null 2>&1 &
-    disown
-    info "nwg-dock-hyprland reloaded"
-}
-
 reload_quickshell() {
     if pgrep -x qs >/dev/null; then
         qs ipc call theme-manager reload
-        qs -p "$HOME/.local/share/ml4w-dotfiles-settings/quickshell" ipc call theme-manager reload
         info "Quickshell theme updated"
     else
         warn "Quickshell not running, skipping theme reload"
@@ -247,8 +229,6 @@ if "$SKIP_THEMING"; then
     info "Updating theming skipped"
 else
     run_matugen
-    reload_waybar
-    reload_nwg_dock
     reload_quickshell
     reload_pywalfox
     reload_swaync

@@ -1,135 +1,177 @@
 # dotfilesLaptop
 
-My Hyprland rice, built on [ML4W OS](https://github.com/mylinuxforwork/dotfiles)
-by Stephan Raabe. All credit for the base goes to him. ML4W installs the
-dependencies.
+My Hyprland rice as GNU Stow packages. It no longer needs ML4W installed.
 
-**Baseline: ML4W 2.14.1**, the stable release that was current when I installed
-on 2026-07-22. The version is kept in `ML4W_BASELINE`.
+It started as [ML4W OS](https://github.com/mylinuxforwork/dotfiles) 2.14.1 by
+Stephan Raabe, and a lot of it is still his work. Since ML4W is licensed under
+the GNU General Public License v3.0, so is this repo (see `LICENSE`). The
+changes made to ML4W's files are listed under "Changes from ML4W" below.
 
-## Layout
+## Packages
 
-This is a traditional stow layout: each package mirrors `~`, so
-`hypr/.config/hypr` becomes `~/.config/hypr`.
+Each folder is a stow package that mirrors `~`, so `hypr/.config/hypr` becomes
+`~/.config/hypr`.
 
-| Package                            | Becomes                                          | What I changed compared with ML4W                                                                                                                                                                                                                                                 |
-| ---------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `hypr`                             | `~/.config/hypr`                                 | own keybindings (`conf/keybindings/gabriel.lua`), autostart, window rules (Matlab, Flameshot, swaync, settings app), `fluidDrop` animation curve, gb/br keyboard, hypridle without screen-off, nvidia environment, HyprMod monitors/borders/gaps (`hyprland-gui.lua`, `hyprmod/`) |
-| `quickshell`                       | `~/.config/quickshell`                           | the whole bar and its panels: notifications with Wi-Fi/Bluetooth, media, calendar, clipboard, power, wallpaper, sidebar, system monitor                                                                                                                                           |
-| `kitty`                            | `~/.config/kitty`                                | 0xProto font, full-size window, remote control on, no cursor trail                                                                                                                                                                                                                |
-| `fastfetch`                        | `~/.config/fastfetch`                            | Ulster University x Fedora config and logo                                                                                                                                                                                                                                        |
-| `btop`                             | `~/.config/btop`                                 | process sorting, disks shown                                                                                                                                                                                                                                                      |
-| `ml4w`                             | `~/.config/ml4w`                                 | `settings/`: Quickshell bar and its module layout, Vivaldi, dock and waybar off, no wallpaper transition; three extra wallpapers. 43 MB, mostly ML4W's wallpapers                                                                                                                 |
-| `gtk-3.0`, `gtk-4.0`, `xsettingsd` | `~/.config/…`                                    | ArcStarry cursor, kora icons                                                                                                                                                                                                                                                      |
-| `zsh`                              | `~/.zshrc`                                       | my own zshrc, not ML4W's loader                                                                                                                                                                                                                                                   |
-| `ohmyposh`                         | `~/Documents/mytheme_v2.toml`                    | the prompt `.zshrc` loads                                                                                                                                                                                                                                                         |
-| `systemd`                          | `~/.config/systemd/user/hyprland-session.target` | needed by `autostart.lua`                                                                                                                                                                                                                                                         |
-| `xdg-desktop-portal`               | `~/.config/xdg-desktop-portal/portals.conf`      | hyprland portal first, gtk second                                                                                                                                                                                                                                                 |
+| Package | Becomes | What it is |
+| --- | --- | --- |
+| `hypr` | `~/.config/hypr` | Hyprland config (Lua), keybindings in `conf/keybindings/gabriel.lua`, hyprlock, hypridle |
+| `quickshell` | `~/.config/quickshell` | the bar and its panels, including Settings |
+| `ml4w` | `~/.config/ml4w` | ML4W's scripts the rice still uses (wallpaper, cliphist, updates, toggles), settings files, wallpapers |
+| `matugen` | `~/.config/matugen` | colours generated from the wallpaper |
+| `rofi`, `swaync`, `kitty`, `fastfetch`, `btop`, `qt6ct` | `~/.config/…` | app configs |
+| `gtk-2.0`, `gtk-3.0`, `gtk-4.0`, `xsettingsd`, `xresources` | `~/.gtkrc-2.0`, `~/.config/…`, `~/.Xresources` | GTK theme, ArcStarry cursor, kora icons |
+| `fonts` | `~/.local/share/fonts/Fira_Sans` | Fira Sans, which the bar, rofi and hyprlock use |
+| `cursors` | `~/.local/share/icons/ArcStarry-cursors` | the cursor theme |
+| `zsh` | `~/.zshrc` | shell config |
+| `ohmyposh` | `~/Documents/mytheme_v2.toml` | prompt theme `.zshrc` loads |
+| `systemd` | `~/.config/systemd/user/hyprland-session.target` | started by `autostart.lua` |
+| `xdg-desktop-portal` | `~/.config/xdg-desktop-portal/portals.conf` | Hyprland portal first |
 
-Each `~/.config/<app>` package holds the **whole** folder (ML4W's files plus my
-edits), not just the files I changed. ML4W makes `~/.config/hypr` a link to its
-own copy in `~/.mydotfiles/com.ml4w.dotfiles.stable/`, and stow can't put files
-inside a link it doesn't own. So the package replaces ML4W's link outright.
-
-`./upstream-diff.sh --mine` lists every file I changed compared with the
-baseline.
+Stow `systemd`, `xdg-desktop-portal` and `ohmyposh` with `--no-folding`, so
+stow doesn't turn `~/.config/systemd` or `~/Documents` into a link to the
+repo.
 
 ## Installing on a new machine
 
-1. Install ML4W (stable) the normal way and log into Hyprland once.
-2. `sudo dnf install stow`
-3. Clone this repo to `~/.dotfilesLaptop`.
-4. Stow what you want. Plain stow works once ML4W's link is out of the way:
+1. **Packages.** On Fedora, enable the COPRs listed at the top of
+   `packages-fedora.txt`, then:
+
+   ```bash
+   sudo dnf install $(grep -v '^#' packages-fedora.txt)
+   ```
+
+   On Arch:
+
+   ```bash
+   paru -S --needed $(grep -v '^#' packages-arch.txt)
+   ```
+
+2. **Things no package manager ships.** Both packages files list them at the
+   top: matugen, oh-my-posh, nwg-displays, the kora icons, grimblast on
+   Fedora, and the calculator and emoji-picker flatpaks.
+
+3. **Stow everything:**
+
+   ```bash
+   cd ~/.dotfilesLaptop
+   stow hypr quickshell ml4w matugen rofi swaync kitty fastfetch btop qt6ct \
+        gtk-2.0 gtk-3.0 gtk-4.0 xsettingsd xresources fonts cursors zsh
+   stow --no-folding systemd xdg-desktop-portal ohmyposh
+   fc-cache -f
+   ```
+
+4. **Log in.** Pick Hyprland at the login screen.
+
+## Moving this laptop off ML4W
+
+ML4W's links are still in place here: `~/.config/hypr` and the others point
+into `~/.mydotfiles/com.ml4w.dotfiles.stable/`. Stow won't write through a
+link it doesn't own. To switch an app over, remove ML4W's link and stow:
 
 ```bash
-cd ~/.dotfilesLaptop
-unlink ~/.config/hypr     # removes only ML4W's link, never its files
-stow hypr
+unlink ~/.config/hypr && stow hypr
 ```
 
-Or let the helper move whatever is in the way into
-`~/.dotfilesLaptop-backup/<date>/` and stow for you:
+`unlink` only ever removes the link, never ML4W's files. Once every package is
+stowed and the desktop has run fine for a while, `~/.mydotfiles/` can go.
+`~/.zshrc` is a plain file here, so move it aside before `stow zsh`.
 
-```bash
-./install.sh --dry-run hypr   # see what would happen
-./install.sh hypr kitty       # some packages
-./install.sh                  # everything
-```
+## Settings
 
-1. Reload Hyprland (SUPER+SHIFT+R) or log out and back in, and open a new
-   terminal.
+The separate ML4W settings app is replaced by a panel that drops out of the
+bar, like the notification centre. Open it three ways:
+- the **Settings** button or the theme icon in the sidebar
+- `qs ipc call settings toggle`
+- the `settings` alias
 
-Plain-stow notes:
+It has three tabs:
+- **Appearance:** rofi border and font, wallpaper blur, and the animation,
+  decoration, window, layout and workspace variants.
+- **Default apps:** terminal, browser, email, file manager, network and
+  Bluetooth managers, software manager, calculator, screenshot editor and
+  system monitor. There's also an AUR helper row, which only appears on
+  Arch-based systems (detected from `/etc/os-release`).
+- **System:** keybinding, monitor, environment and window-rule variants.
 
-- **Never** `rm -r ~/.config/hypr/` with a trailing slash. That deletes ML4W's
-  files through the link. `unlink` refuses to touch anything but a link.
-- `zsh`: ML4W links `~/.zshrc` to its own loader, so `unlink ~/.zshrc` first.
-- Stow `systemd`, `xdg-desktop-portal` and `ohmyposh` with `--no-folding`.
-  Otherwise, on a machine where `~/.config/systemd` doesn't exist yet, stow
-  links the whole folder to the repo, and every unit you enable later lands in
-  git. `install.sh` does this for you.
+The panel lists whatever `quickshell/.config/quickshell/SettingsApp/settings.json`
+says, so adding a setting means adding an entry there. Changing a Hyprland
+variant runs `hyprctl reload`.
 
-## Living with it
+## Power menu
 
-- Stowed folders are links into the repo, so anything that writes there
-  (HyprMod, the ML4W settings app, you) changes the repo directly.
-- matugen rewrites the colour files on every wallpaper change:
-  `hypr/colors.*`, `kitty/colors-matugen.conf`, `btop/themes/matugen.theme`,
-  `ml4w/colors/`, `gtk-*/colors.css`,
-  `quickshell/overview/common/Appearance.colors.qml`. They're kept in the repo
-  so a fresh machine starts with valid colours. After your first commit, hide
-  the churn with `git update-index --skip-worktree <file>`.
-- ML4W updates don't reach a stowed package any more. ML4W keeps updating its
-  copy in `~/.mydotfiles/`, but nothing links to it. `./upstream-diff.sh` shows
-  what you'd be missing.
-- `./install.sh --delete hypr` unstows. To hand the folder back to ML4W, move
-  its old link back from the backup folder.
+The power panel follows the
+[Hyprland wiki](https://wiki.hypr.land/Hypr-Ecosystem/hyprshutdown/): logout,
+reboot and power off go through `hyprshutdown`, which asks every app to close
+before Hyprland exits instead of killing them. Lock goes through
+`loginctl lock-session`, so hypridle starts hyprlock; when hypridle is stopped
+(caffeine mode), it runs hyprlock directly. SUPER+CTRL+L does the same.
 
-## Upstream changes since the baseline
+This laptop uses SDDM with NVIDIA. If logging out ever leaves a black screen,
+the wiki's fix is adding `--vt <n>` to the `hyprshutdown` calls in
+`quickshell/.config/quickshell/PowerApp/PowerPanel.qml`, where `n` is the VT
+SDDM runs on.
 
-`./upstream-diff.sh` clones ML4W into `~/.cache/dotfilesLaptop/` and diffs
-`ML4W_BASELINE` against the current stable tag, limited to the folders this
-repo takes over. Pass a tag to compare against something else, `-p` for full
-diffs.
+## Notifications
 
-As of 2.15.1, these are the upstream changes to files I had also changed:
+swaync still handles notifications. `NOTIFICATIONS.md` compares the ways to
+show the list inside the bar's own panel instead: Quickshell's built-in
+notification server, mako, and dunst.
 
-| File                                                            | What upstream changed                                                                                             | 3-way merge onto 2.15.1                                                                                           |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `hypr/conf/environment.lua`                                     | Sets `QS_ICON_THEME` from the GTK icon theme, so Quickshell uses the same icons                                   | 1 conflict (small)                                                                                                |
-| `hypr/conf/ml4w.lua`                                            | pavucontrol and waypaper rules changed from `*name*` to regex `.*name.*`                                          | 2 conflicts, mostly whitespace (mine uses tabs)                                                                   |
-| `hypr/conf/keybindings/gabriel.lua` (forked from `default.lua`) | Calculator on SUPER+C; new status bar and dock toggles; scratchpad workspace renamed from `magic` to `scratchpad` | 2 conflicts                                                                                                       |
-| `quickshell/`                                                   | New dock (`DockApp`, loaded from `shell.qml`), status bar autohide, restyled power-profile menu, sidebar changes  | `shell.qml` merges cleanly; `StatusbarWindow.qml` has 3 conflicts, `PowerProfileModule.qml` 2, `statusbar.json` 1 |
-| `ml4w/settings/statusbar*`                                      | Upstream now defaults to the Quickshell bar too                                                                   | mine still sets the module layout                                                                                 |
-| `fastfetch/config.jsonc`                                        | Minor edits                                                                                                       | mine replaces it entirely                                                                                         |
+## Changes from ML4W
 
-Upstream also changed files I never touched in those folders. Examples are the
-order of the monitor includes in `hyprland.lua`, `WelcomeWindow.qml`, and
-several ML4W scripts; `./upstream-diff.sh` lists them. The repo as it stands
-is exactly what runs on this laptop today. One thing won't work: the 2.15.1
-dock toggles (SUPER+CTRL+D, `ml4w-toggle-dock`), because my Quickshell has no
-`DockApp`. I have the dock disabled anyway.
+**Removed:**
+- waybar and its themes
+- the ML4W dock (nwg-dock-hyprland)
+- walker, waypaper and wlogout configs
+- the welcome app and ML4W's separate settings app
+- the theme switcher (`ml4w/themes`), which only switched waybar, dock and
+  walker themes
+- ML4W's own install and update scripts
+- about 20 scripts nothing calls
+- matugen outputs for the removed apps
 
-## Deliberately left out
+**Replaced:**
+- the settings app, with the Settings panel
+- `ml4w-power`, with the `hyprshutdown` calls above
+- the launcher script, with rofi only
+- the status bar toggle and reload scripts, with Quickshell only
 
-- swaync and rofi: unchanged from ML4W. waybar: disabled in favour of
-  Quickshell. ML4W's copies keep working.
-- `*.bak`, `fastfetch/config.jsonc.bkp` (the stock config) and
-  `quickshell/StatusbarApp.backup-*`.
-- Not part of the rice: `~/.config/autostart` (Dropbox, MATLAB), voxtype,
-  nvim, yazi.
+**Edited:**
+- **Sidebar:** Welcome button, waybar engine switch, waybar menu items and dock
+  switches removed.
+- **SUPER+Q:** closes an open Settings panel too.
+- **Wallpaper script and GTK theme listener:** no longer restart waybar or the
+  dock.
+- **Autostart log:** now written to `~/.cache/ml4w-autostart.log` instead of
+  `~/.mydotfiles/`.
+- **Kept on purpose:** paths under `~/.config/ml4w`, and ML4W's wallpaper
+  script (`ml4w-wallpaper`), so nothing that already worked had to change.
 
-## Things ML4W may not install
+**Your own work on top:**
+- the Quickshell bar and its panels
+- your keybindings and the fluidDrop animation
+- the window rules, hypridle, kitty and fastfetch configs
 
-The configs use these; check they're present:
+`ML4W_BASELINE` and `./upstream-diff.sh` are still here if you want to see
+what ML4W changed upstream and pick fixes by hand. `--mine` will now also list
+everything removed.
 
-- **0xProto Nerd Font**: kitty.
-- **kora** icon theme and **ArcStarry** cursors: gtk and xsettingsd. The
-  Quickshell workspace module resolves app icons through kora.
-- **solaar**, **flameshot**: autostart and window rules.
-- **eza**, **zoxide**, **fzf**, **yazi**, **neovim**, **oh-my-posh**: `.zshrc`.
-  zinit and its plugins clone themselves on the first shell start.
-- `.zshrc` hard-codes `/home/gabriel/…` paths for TeX Live and MATLAB, and runs
-  `fastfetch` on start.
-- `hyprland-gui.lua` holds this laptop's monitor layout (eDP-1 plus DP-5 on the
-  left), and `environment.lua` selects the nvidia variant.
+## Known gaps
+
+- **Polkit agent:** `autostart.lua` starts polkit-gnome from
+  `/usr/lib/polkit-gnome/`, which is where Arch installs it. Fedora doesn't
+  package polkit-gnome, so this laptop has been running without a polkit agent;
+  `mate-polkit` is Fedora's closest equivalent. This comes from ML4W and is
+  unchanged here.
+- **grimblast:** not in Fedora's repos or the COPRs above. `screenshot.sh` uses
+  it for some modes.
+- **Arch list:** `packages-arch.txt` comes from ML4W's Arch lists and couldn't be
+  checked from this machine.
+
+## Licences
+
+- **Everything derived from ML4W:** GPL-3.0 (`LICENSE`).
+- **Fira Sans:** SIL Open Font License (`fonts/.local/share/fonts/Fira_Sans/OFL.txt`).
+- **ArcStarry cursors:** they came with ML4W's setup files; check the cursor
+  project's own licence before publishing this repo.
+- **`quickshell/overview`:** a separate project, with its own README.
