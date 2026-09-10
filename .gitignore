@@ -7,3 +7,7 @@
 # Caches that some of these tools drop into their config directories
 nvim/.netrwhist
 yazi/*.cache
+
+# Leftovers from editing the Quickshell bar
+*.bkp
+StatusbarApp.backup-*/
