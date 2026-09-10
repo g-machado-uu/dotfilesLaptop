@@ -1,7 +1,7 @@
 -- Flameshot
 hl.window_rule({
 	name = "flameshot",
-	match = { class = "*flameshot*" },
+	match = { class = ".*flameshot.*" },
 	float = true,
 })
 
