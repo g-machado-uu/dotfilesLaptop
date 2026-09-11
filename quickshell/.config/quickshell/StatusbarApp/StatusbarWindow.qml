@@ -229,6 +229,11 @@ PanelWindow {
     // focus grab is released because the user interacted with another window.
     property bool barExpanded: false
 
+    // Set by shell.qml while the desktop widget is showing the time and date on
+    // an empty workspace: the bar folds its own clock away so the two are never
+    // both on screen. The handover timing lives in the widget.
+    property bool hideClock: false
+
     // When set in statusbar.json the pill never collapses: it stays in its
     // expanded (full-width) state independent of hover or the IPC toggle. This
     // is purely visual — unlike barExpanded it does not grab the keyboard — so
@@ -257,8 +262,12 @@ PanelWindow {
         id: cClock
         ClockModule {
             expanded: pill.expanded
+            hidden: root.hideClock
             timeFormat: root.settings.clock.format
             dateFormat: root.settings.clock.dateFormat
+            // Rebuild the keyboard navigation list when the clock folds away or
+            // comes back, the same way the other foldable modules do.
+            onCollapsedChanged: Qt.callLater(root.rebuildNavItems)
             onToggleRequested: root.togglePanel("calendar")
         }
     }
@@ -615,9 +624,12 @@ PanelWindow {
         property bool expanded: hoverHandler.hovered || root.barExpanded
             || root.alwaysExpanded || root.trayMenuOpen || root.openPanel !== ""
         // 0 in the settings file means "hug the center content".
+        // The center area carries half of its own gap on each outer end (see
+        // its margins below), so 14 of the old padding is already in its
+        // implicit width.
         property real collapsedWidth: root.settings.pill.collapsedWidth > 0
             ? root.settings.pill.collapsedWidth
-            : centerArea.implicitWidth + 32
+            : centerArea.implicitWidth + 18
 
         // Minimum width the content needs so the centered center area never
         // overlaps the left/right areas. The center stays centered, so each
@@ -628,7 +640,7 @@ PanelWindow {
         // pushes the bar wider instead of clipping.
         property real contentWidth: centerArea.implicitWidth
             + 2 * Math.max(leftArea.implicitWidth, rightArea.implicitWidth)
-            + 64
+            + 50
         // expandedWidth from the settings file is treated as a minimum: the
         // pill grows past it when the content needs more room.
         property real expandedWidth: Math.max(
@@ -759,16 +771,28 @@ PanelWindow {
         // ==========================================
         // CENTER AREA (always visible)
         // ==========================================
+        // The gap between the center modules is carried as a margin on each
+        // module rather than as the layout's spacing, because a module that
+        // folds away (the clock, when the desktop widget has the time) can then
+        // close its own gap as it goes. Layout spacing would survive the fold
+        // at full width and leave a hole in the middle of the bar.
         RowLayout {
             id: centerArea
             anchors.centerIn: parent
-            spacing: 14
+            spacing: 0
 
             Repeater {
                 id: centerRepeater
                 model: root.settings.modules.center
                 Loader {
+                    id: centerSlot
                     Layout.alignment: Qt.AlignVCenter
+                    // Half the gap on each side, scaled down by however far the
+                    // module has folded (0 = fully out, 1 = fully folded).
+                    readonly property real foldAmount:
+                        (item && item.fold !== undefined) ? item.fold : 0
+                    Layout.leftMargin: 7 * (1 - centerSlot.foldAmount)
+                    Layout.rightMargin: 7 * (1 - centerSlot.foldAmount)
                     sourceComponent: root.moduleComponents[modelData] || null
                     onLoaded: Qt.callLater(root.rebuildNavItems)
                 }

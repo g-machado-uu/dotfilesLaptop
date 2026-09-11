@@ -1,0 +1,191 @@
+import Quickshell
+import Quickshell.Io
+import QtQuick
+
+// Weather for the desktop widget, from Open-Meteo (free, no key, no account).
+//
+// The notification panel fetches its own copy of roughly the same data; this one
+// is kept separate because it needs three extra current readings (humidity,
+// apparent temperature, wind) and a day more of forecast, and because the two
+// surfaces come and go independently — sharing one fetch would mean one of them
+// dictating when the other refreshes.
+Item {
+    id: src
+
+    // Free-text place name, e.g. "Belfast, UK". Anything after the first comma
+    // is a hint used to pick between same-named places rather than being sent
+    // to the geocoder.
+    property string location: "Belfast, UK"
+
+    // Set false by the widget while it is off screen: there is no point
+    // refreshing weather nobody can see.
+    property bool active: true
+
+    readonly property bool loaded: _loaded
+    property bool _loaded: false
+    property string error: ""
+
+    property string place: ""
+    property real latitude: NaN
+    property real longitude: NaN
+
+    // --- CURRENT CONDITIONS ---
+    property int code: 0
+    property bool isDay: true
+    property real temperature: 0
+    property real apparent: 0
+    property int humidity: 0
+    property real windSpeed: 0
+    property int windDirection: 0
+    property real todayMin: 0
+    property real todayMax: 0
+
+    // Three entries of { day, code, min, max } for the days after today.
+    property var forecast: []
+
+    // Rounded degrees, the one temperature format used across the widget.
+    function fmt(t: real): string {
+        return Math.round(t) + "°"
+    }
+
+    // ------------------------------------------------------------------
+    // GEOCODING
+    // ------------------------------------------------------------------
+    function geocode(): void {
+        const parts = src.location.split(",")
+        const name = parts[0].trim()
+        if (name === "")
+            return
+        geoProc.command = ["bash", "-c",
+            "curl -s --max-time 12 'https://geocoding-api.open-meteo.com/v1/search?name="
+            + encodeURIComponent(name) + "&count=10&language=en&format=json'"]
+        geoProc.running = false
+        geoProc.running = true
+    }
+
+    Process {
+        id: geoProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const hint = src.location.split(",").slice(1).join(",").trim().toLowerCase()
+                try {
+                    const res = JSON.parse(this.text).results
+                    if (!res || res.length === 0) {
+                        src.error = "Location not found"
+                        return
+                    }
+                    let pick = res[0]
+                    if (hint !== "") {
+                        for (let i = 0; i < res.length; i++) {
+                            const r = res[i]
+                            const hay = [r.country, r.country_code, r.admin1]
+                                .filter(v => v !== undefined)
+                                .join(" ").toLowerCase()
+                            if (hay.indexOf(hint) >= 0) {
+                                pick = r
+                                break
+                            }
+                        }
+                    }
+                    src.latitude = pick.latitude
+                    src.longitude = pick.longitude
+                    src.place = pick.name
+                        + (pick.country_code ? ", " + pick.country_code : "")
+                    src.error = ""
+                    src.fetch()
+                } catch (e) {
+                    src.error = "No connection"
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // FORECAST
+    // ------------------------------------------------------------------
+    function fetch(): void {
+        if (isNaN(src.latitude))
+            return
+        weatherProc.command = ["bash", "-c",
+            "curl -s --max-time 12 'https://api.open-meteo.com/v1/forecast?latitude="
+            + src.latitude + "&longitude=" + src.longitude
+            + "&current=temperature_2m,relative_humidity_2m,apparent_temperature"
+            + ",is_day,weather_code,wind_speed_10m,wind_direction_10m"
+            + "&daily=weather_code,temperature_2m_max,temperature_2m_min"
+            + "&wind_speed_unit=kn"
+            + "&timezone=auto&forecast_days=4'"]
+        weatherProc.running = false
+        weatherProc.running = true
+    }
+
+    Process {
+        id: weatherProc
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const d = JSON.parse(this.text)
+                    src.temperature = d.current.temperature_2m
+                    src.code = d.current.weather_code
+                    src.isDay = d.current.is_day === 1
+                    src.apparent = d.current.apparent_temperature
+                    src.humidity = d.current.relative_humidity_2m
+                    src.windSpeed = d.current.wind_speed_10m
+                    src.windDirection = d.current.wind_direction_10m
+                    src.todayMax = d.daily.temperature_2m_max[0]
+                    src.todayMin = d.daily.temperature_2m_min[0]
+
+                    const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                    let out = []
+                    // Skip index 0 (today) — the section above already covers it.
+                    for (let i = 1; i < d.daily.time.length && i < 4; i++) {
+                        out.push({
+                            "day": names[new Date(d.daily.time[i] + "T12:00:00").getDay()],
+                            "code": d.daily.weather_code[i],
+                            "min": d.daily.temperature_2m_min[i],
+                            "max": d.daily.temperature_2m_max[i]
+                        })
+                    }
+                    src.forecast = out
+                    src._loaded = true
+                    src.error = ""
+                } catch (e) {
+                    src.error = "No connection"
+                }
+            }
+        }
+    }
+
+    // Re-geocode when the place changes, otherwise just re-fetch.
+    function refresh(): void {
+        if (isNaN(src.latitude))
+            src.geocode()
+        else
+            src.fetch()
+    }
+
+    onLocationChanged: {
+        src.latitude = NaN
+        src._loaded = false
+        src.geocode()
+    }
+
+    Component.onCompleted: src.geocode()
+
+    // The widget is on screen from the moment the session starts, which is
+    // usually before the network is up, so the first few attempts are expected
+    // to fail. Retry quickly until something lands, then settle into a slow
+    // refresh.
+    Timer {
+        interval: src._loaded ? 15 * 60 * 1000 : 20 * 1000
+        repeat: true
+        running: true
+        onTriggered: src.refresh()
+    }
+
+    // Catch up as soon as the widget comes back on screen, so a machine that
+    // was asleep for hours is not showing yesterday's weather.
+    onActiveChanged: {
+        if (src.active)
+            src.refresh()
+    }
+}
