@@ -35,8 +35,13 @@ Item {
     property real temperature: 0
     property real apparent: 0
     property int humidity: 0
+    // Wind is requested in knots (wind_speed_unit=kn) so it can be reported the
+    // way an aviation METAR does.
     property real windSpeed: 0
     property int windDirection: 0
+    property real windGust: 0
+    // Mean sea level pressure, i.e. the QNH, in hPa.
+    property real pressure: 0
     property real todayMin: 0
     property real todayMax: 0
 
@@ -47,6 +52,39 @@ Item {
     function fmt(t: real): string {
         return Math.round(t) + "°"
     }
+
+    function pad(n: int, width: int): string {
+        let s = String(Math.round(n))
+        while (s.length < width)
+            s = "0" + s
+        return s
+    }
+
+    // The wind group of a METAR: direction the wind blows *from*, rounded to
+    // the nearest ten degrees, then the mean speed in knots — "19008KT". Calm
+    // is "00000KT", north is 360 rather than 000, and a gust is appended only
+    // when it runs 10 knots or more above the mean, which is the reporting
+    // rule METAR uses.
+    // Takes its readings as arguments rather than reaching for the properties
+    // directly, so the binding below re-evaluates whenever one of them changes;
+    // a no-argument call would be bound to nothing and go stale after the first
+    // fetch.
+    function metarWind(speed: real, direction: int, gust: real): string {
+        const kt = Math.round(speed)
+        if (kt < 1)
+            return "00000KT"
+        let dir = Math.round(direction / 10) * 10
+        if (dir <= 0)
+            dir = 360
+        else if (dir > 360)
+            dir = dir % 360
+        const g = Math.round(gust)
+        const gustPart = (g - kt >= 10) ? "G" + src.pad(g, 2) : ""
+        return src.pad(dir, 3) + src.pad(kt, 2) + gustPart + "KT"
+    }
+
+    readonly property string windMetar:
+        src.metarWind(src.windSpeed, src.windDirection, src.windGust)
 
     // ------------------------------------------------------------------
     // GEOCODING
@@ -111,6 +149,7 @@ Item {
             + src.latitude + "&longitude=" + src.longitude
             + "&current=temperature_2m,relative_humidity_2m,apparent_temperature"
             + ",is_day,weather_code,wind_speed_10m,wind_direction_10m"
+            + ",wind_gusts_10m,pressure_msl"
             + "&daily=weather_code,temperature_2m_max,temperature_2m_min"
             + "&wind_speed_unit=kn"
             + "&timezone=auto&forecast_days=4'"]
@@ -131,6 +170,8 @@ Item {
                     src.humidity = d.current.relative_humidity_2m
                     src.windSpeed = d.current.wind_speed_10m
                     src.windDirection = d.current.wind_direction_10m
+                    src.windGust = d.current.wind_gusts_10m
+                    src.pressure = d.current.pressure_msl
                     src.todayMax = d.daily.temperature_2m_max[0]
                     src.todayMin = d.daily.temperature_2m_min[0]
 

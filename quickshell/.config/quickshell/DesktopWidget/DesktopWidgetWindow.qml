@@ -49,6 +49,32 @@ PanelWindow {
     readonly property bool hideBarClock: _hideBarClock
     property bool _hideBarClock: false
 
+    // True while any section is still flying. Used to park the weather glyphs'
+    // own animations for the duration: every frame of the transition should be
+    // spent moving the sections, not redrawing drifting clouds inside them.
+    readonly property bool animating: timeSection.running
+        || weatherSection.running || forecastSection.running
+
+    // Whether the weather glyphs are allowed to move.
+    //
+    // Their drifting and falling is the entire idle cost of this widget:
+    // measured on this machine, the shell sits at ~1% of a core with them still
+    // and ~17% with them running, because any continuous animation keeps the
+    // scene graph redrawing at the refresh rate. On a desktop that can be left
+    // on an empty workspace for hours — on battery — that is not worth paying
+    // for indefinitely, and it leaves nothing spare for the next transition.
+    //
+    // So they run for a few seconds as the widget arrives, where the movement
+    // actually registers, and then settle. Raise motionWindow.interval to keep
+    // them going for longer, or set this to `w.shown` for always-on motion.
+    property bool glyphMotion: false
+
+    Timer {
+        id: motionWindow
+        interval: 12000
+        onTriggered: w.glyphMotion = false
+    }
+
     WlrLayershell.layer: WlrLayer.Top
     // Kept out of the "quickshell" namespace the bar uses so a layer rule can
     // single this surface out later without touching the bar.
@@ -68,7 +94,7 @@ PanelWindow {
         right: true
     }
 
-    // Tall enough for the content plus room for the shadows to fall.
+    // Tall enough for the content plus room for the clock's halo to fall.
     implicitHeight: stack.y + stack.implicitHeight + 48
 
     // The point everything converges on: the middle of the bar, which is where
@@ -87,7 +113,7 @@ PanelWindow {
     //
     // The brightness of the wallpaper region actually behind the widget is
     // measured instead, and the text goes black or white to suit. Neutral ink
-    // plus an opposite-coloured shadow is what survives every wallpaper; theme
+    // plus an opposite-coloured halo is what survives every wallpaper; theme
     // colours are deliberately not used for the text.
     property real wallpaperLuma: 0.25
     readonly property bool darkInk: wallpaperLuma > 0.56
@@ -205,8 +231,13 @@ PanelWindow {
         if (w.shown) {
             handover.stop()
             w._hideBarClock = true
+            // Let the glyphs move while the widget settles in, then go quiet.
+            w.glyphMotion = true
+            motionWindow.restart()
         } else {
             handover.restart()
+            w.glyphMotion = false
+            motionWindow.stop()
         }
     }
 
@@ -234,6 +265,8 @@ PanelWindow {
 
         // 0 = fully out on the desktop, 1 = swallowed by the bar.
         property real p: 1
+
+        readonly property bool running: inAnim.running || outAnim.running
 
         // Distance from this section's own top to the funnel point.
         readonly property real funnelOffset: w.funnelY - (stack.y + sec.y)
@@ -282,10 +315,10 @@ PanelWindow {
         }
     }
 
-    // A dart showing which way the wind is going. Open-Meteo reports the
-    // bearing the wind blows *from*, which is the meteorological convention, so
-    // the arrow is turned through 180° to point the way the air is actually
-    // travelling — the way a weather app's arrow reads.
+    // The wind dart, pointing the way an aviation wind barb does: along the
+    // bearing the wind is blowing *from*, which is the direction a METAR
+    // reports. A southerly therefore points down the screen, towards the south
+    // it is coming out of.
     component WindArrow: Shape {
         id: arrow
 
@@ -294,12 +327,14 @@ PanelWindow {
 
         implicitWidth: glyphSize
         implicitHeight: glyphSize
-        preferredRendererType: Shape.CurveRenderer
+        // The default renderer is enough for a four-line dart and costs less to
+        // rasterise than the curve renderer.
+        preferredRendererType: Shape.GeometryRenderer
 
         transform: Rotation {
             origin.x: arrow.glyphSize / 2
             origin.y: arrow.glyphSize / 2
-            angle: arrow.bearing + 180
+            angle: arrow.bearing
         }
 
         // Drawn pointing straight up, i.e. due north before the rotation.
@@ -314,14 +349,17 @@ PanelWindow {
         }
     }
 
-    // A soft halo so the text holds its own over whatever is behind it,
-    // including the busy middle of a photograph.
-    component Halo: MultiEffect {
-        shadowEnabled: true
-        shadowColor: w.haloColor
-        shadowOpacity: w.darkInk ? 0.5 : 0.62
-        shadowBlur: 0.9
-        shadowVerticalOffset: 1
+    // Text that carries its own contrast. The outline is drawn by the text
+    // shader itself, so — unlike a blurred drop shadow — it needs no offscreen
+    // layer and costs nothing per frame. That matters because the weather
+    // glyphs animate continuously: anything sharing a layer with them would be
+    // re-rendered, and re-blurred, on every single frame.
+    component InkText: Text {
+        color: w.ink
+        font.family: "Red Hat Display"
+        font.weight: Font.Medium
+        style: Text.Outline
+        styleColor: w.haloColor
     }
 
     // ------------------------------------------------------------------
@@ -336,6 +374,9 @@ PanelWindow {
         spacing: 22
 
         // --- 1. TIME AND DATE ---
+        // This is the one section that keeps a blurred halo: its content only
+        // changes once a minute, so the layer is generated once and then simply
+        // re-used, which is cheap even while the section is flying.
         Section {
             id: timeSection
             revealed: w.shown
@@ -344,7 +385,14 @@ PanelWindow {
             implicitHeight: timeCol.height
 
             layer.enabled: true
-            layer.effect: Halo {}
+            layer.smooth: true
+            layer.effect: MultiEffect {
+                shadowEnabled: true
+                shadowColor: w.haloColor
+                shadowOpacity: w.darkInk ? 0.5 : 0.62
+                shadowBlur: 0.9
+                shadowVerticalOffset: 1
+            }
 
             Column {
                 id: timeCol
@@ -381,9 +429,6 @@ PanelWindow {
             outDelay: 80
             implicitHeight: weatherRow.height + 6
 
-            layer.enabled: true
-            layer.effect: Halo {}
-
             // The reading and the detail block are laid out as one row and that
             // row is centred, so what lands on the widget's centre line is the
             // gap between them rather than either block.
@@ -395,14 +440,17 @@ PanelWindow {
                 // Icon and temperature.
                 Row {
                     id: nowRow
-                    spacing: 12
+                    spacing: 14
 
                     WeatherIcon {
                         anchors.verticalCenter: parent.verticalCenter
-                        size: 66
+                        size: 84
                         code: weather.code
                         night: !weather.isDay
-                        animate: w.shown
+                        // Parked while a section is in flight, so the transition
+                        // gets the whole frame budget, and again once the
+                        // arrival has had its moment of movement.
+                        animate: w.glyphMotion && !w.animating
                         // Monochrome: the palette's own accent is derived from
                         // the wallpaper and can land at any brightness, which is
                         // the one thing this surface cannot afford.
@@ -415,21 +463,16 @@ PanelWindow {
                         anchors.verticalCenter: parent.verticalCenter
                         spacing: -2
 
-                        Text {
+                        InkText {
                             text: weather.loaded ? weather.fmt(weather.temperature) : "--°"
-                            color: w.ink
-                            font.family: "Red Hat Display"
-                            font.pixelSize: 46
-                            font.weight: Font.Medium
+                            font.pixelSize: 58
                         }
 
-                        Text {
+                        InkText {
                             text: weather.error !== "" ? weather.error
                                 : (weather.loaded ? conditionGlyph.label : "Loading…")
                             color: w.inkDim
-                            font.family: "Red Hat Display"
-                            font.pixelSize: 14
-                            font.weight: Font.Medium
+                            font.pixelSize: 15
                             font.letterSpacing: 0.5
                         }
                     }
@@ -441,23 +484,20 @@ PanelWindow {
                     id: detailGrid
                     columns: 2
                     columnSpacing: 10
-                    rowSpacing: 1
+                    rowSpacing: 2
 
-                    component DetailLabel: Text {
+                    component DetailLabel: InkText {
                         Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                         color: w.inkFaint
-                        font.family: "Red Hat Display"
                         font.pixelSize: 11
                         font.weight: Font.Bold
                         font.letterSpacing: 1
                     }
 
-                    component DetailValue: Text {
+                    component DetailValue: InkText {
                         Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                         color: w.inkDim
-                        font.family: "Red Hat Display"
                         font.pixelSize: 15
-                        font.weight: Font.Medium
                     }
 
                     DetailLabel { text: "MIN / MAX" }
@@ -487,8 +527,11 @@ PanelWindow {
 
                         DetailLabel { text: "WIND" }
                     }
+                    DetailValue { text: weather.loaded ? weather.windMetar : "--" }
+
+                    DetailLabel { text: "QNH" }
                     DetailValue {
-                        text: weather.loaded ? Math.round(weather.windSpeed) + " kn" : "--"
+                        text: weather.loaded ? Math.round(weather.pressure) + " hPa" : "--"
                     }
                 }
             }
@@ -511,9 +554,6 @@ PanelWindow {
             outDelay: 160
             implicitHeight: forecastRow.height
 
-            layer.enabled: true
-            layer.effect: Halo {}
-
             Row {
                 id: forecastRow
                 anchors.horizontalCenter: parent.horizontalCenter
@@ -526,11 +566,10 @@ PanelWindow {
                         required property var modelData
                         spacing: 2
 
-                        Text {
+                        InkText {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: modelData.day.toUpperCase()
                             color: w.inkFaint
-                            font.family: "Red Hat Display"
                             font.pixelSize: 12
                             font.weight: Font.Bold
                             font.letterSpacing: 2
@@ -540,18 +579,16 @@ PanelWindow {
                             anchors.horizontalCenter: parent.horizontalCenter
                             size: 42
                             code: modelData.code
-                            animate: w.shown
+                            animate: w.glyphMotion && !w.animating
                             warm: w.ink
                             cool: w.inkDim
                         }
 
-                        Text {
+                        InkText {
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: weather.fmt(modelData.min) + " / " + weather.fmt(modelData.max)
                             color: w.inkDim
-                            font.family: "Red Hat Display"
                             font.pixelSize: 14
-                            font.weight: Font.Medium
                         }
                     }
                 }
