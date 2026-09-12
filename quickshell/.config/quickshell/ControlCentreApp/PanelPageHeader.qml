@@ -3,7 +3,7 @@ import QtQuick.Layouts
 import qs.CustomTheme
 import qs.shared
 
-// Header for a notification-panel sub-page: back arrow, title, a refresh
+// Header for a control-centre sub-page: back arrow, title, a refresh
 // button and the radio's own on/off switch.
 RowLayout {
     id: header

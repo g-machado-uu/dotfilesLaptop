@@ -1,21 +1,23 @@
 # dotfilesLaptop
 
-My Hyprland setup, as GNU Stow packages. It no longer needs ML4W installed.
+My own take on ML4W dotfiles. Repo setup to be used with gnu stow.
 
 ![The desktop widget on an empty workspace](docs/img/desktop-widget.jpg)
 
-The bar is Quickshell. So is everything that drops out of it, and so is the
-time and weather widget above, which lives on empty workspaces only.
+The idea is to use the power of Quickshell to have most of the apps dropping out of the statusbar. There is a time and weather widget above, which lives on empty workspaces only.
 
 It started as [ML4W OS](https://github.com/mylinuxforwork/dotfiles) 2.14.1 by
 Stephan Raabe, and a good part of it is still his work — including the
 wallpapers. ML4W is GPL-3.0, so this repo is too (see `LICENSE`). What I
 changed in his files is listed under [Changes from ML4W](#changes-from-ml4w).
 
+This customisation is heavily assisted by Claude AI. Nobody with twin toddlers and a full-time job that has nothing to do with developing has the time to configure all this. I wanted something to fit my needs based on the great job done by Stephan Raabe and his ML4W dotfiles.
+
 ## Screenshots
 
 The bar. Workspaces and a terminal button on the left, media, launcher, clock
-and notifications in the centre, the tray and the system modules on the right.
+and the control centre in the centre, the tray and the system modules on the
+right.
 Which modules appear, and in which order, comes from
 `~/.config/ml4w/settings/statusbar.json`.
 
@@ -24,11 +26,14 @@ Which modules appear, and in which order, comes from
 <details>
 <summary>The panels that drop out of it</summary>
 
-Notification centre — toggles, sliders, the weather and the notification count.
+Control centre — toggles, sliders, the weather and the notification count.
 Wi-Fi and Bluetooth open sub-pages in place. Clicking the place name above the
-weather turns it into a text field.
+weather turns it into a text field. It is the `controlcentre` module, a set of
+sliders in the bar, with a mark under the glyph while notifications are waiting
+and a bar there while Do Not Disturb is on. It still answers to its old name,
+`notifications`, in both `statusbar.json` and `qs ipc`.
 
-![Notification centre](docs/img/notification-centre.jpg)
+![Control centre](docs/img/notification-centre.jpg)
 
 The Settings panel, on its Statusbar tab.
 
@@ -51,23 +56,23 @@ kitty, rofi, btop and swaync.
 Each folder is a stow package that mirrors `~`, so `hypr/.config/hypr` becomes
 `~/.config/hypr`.
 
-| Package | Becomes | What it is |
-| --- | --- | --- |
-| `hypr` | `~/.config/hypr` | Hyprland config (Lua), keybindings in `conf/keybindings/gabriel.lua`, hyprlock, hypridle |
-| `quickshell` | `~/.config/quickshell` | the bar, the desktop widget and all the panels, including Settings |
-| `ml4w` | `~/.config/ml4w` | ML4W's scripts this setup still uses (wallpaper, cliphist, updates, toggles), settings files, wallpapers |
-| `matugen` | `~/.config/matugen` | templates for the colours generated from the wallpaper |
-| `rofi`, `swaync`, `kitty`, `fastfetch`, `btop`, `qt6ct` | `~/.config/…` | app configs |
-| `nvim` | `~/.config/nvim` | LazyVim, with LSP, DAP for C, LaTeX and snippets |
-| `vim` | `~/.config/vim/.vimrc` | plain vim, for when nvim is not there |
-| `browserflags` | `~/.config/chromium-flags.conf`, `~/.config/edge-flags.conf` | Wayland flags for Chromium and Edge |
-| `gtk-2.0`, `gtk-3.0`, `gtk-4.0`, `xsettingsd`, `xresources` | `~/.gtkrc-2.0`, `~/.config/…`, `~/.Xresources` | GTK theme, ArcStarry cursor, kora icons |
-| `fonts` | `~/.local/share/fonts/Fira_Sans` | Fira Sans, which the bar, rofi and hyprlock use |
-| `cursors` | `~/.local/share/icons/ArcStarry-cursors` | the cursor theme |
-| `zsh` | `~/.zshrc` | shell config |
-| `ohmyposh` | `~/Documents/mytheme_v2.toml` | prompt theme `.zshrc` loads |
-| `systemd` | `~/.config/systemd/user/hyprland-session.target` | started by `autostart.lua` |
-| `xdg-desktop-portal` | `~/.config/xdg-desktop-portal/portals.conf` | Hyprland portal first |
+| Package                                                     | Becomes                                                      | What it is                                                                                               |
+| ----------------------------------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `hypr`                                                      | `~/.config/hypr`                                             | Hyprland config (Lua), keybindings in `conf/keybindings/gabriel.lua`, hyprlock, hypridle                 |
+| `quickshell`                                                | `~/.config/quickshell`                                       | the bar, the desktop widget and all the panels, including Settings                                       |
+| `ml4w`                                                      | `~/.config/ml4w`                                             | ML4W's scripts this setup still uses (wallpaper, cliphist, updates, toggles), settings files, wallpapers |
+| `matugen`                                                   | `~/.config/matugen`                                          | templates for the colours generated from the wallpaper                                                   |
+| `rofi`, `swaync`, `kitty`, `fastfetch`, `btop`, `qt6ct`     | `~/.config/…`                                                | app configs                                                                                              |
+| `nvim`                                                      | `~/.config/nvim`                                             | LazyVim, with LSP, DAP for C, LaTeX and snippets                                                         |
+| `vim`                                                       | `~/.config/vim/.vimrc`                                       | plain vim, for when nvim is not there                                                                    |
+| `browserflags`                                              | `~/.config/chromium-flags.conf`, `~/.config/edge-flags.conf` | Wayland flags for Chromium and Edge                                                                      |
+| `gtk-2.0`, `gtk-3.0`, `gtk-4.0`, `xsettingsd`, `xresources` | `~/.gtkrc-2.0`, `~/.config/…`, `~/.Xresources`               | GTK theme, ArcStarry cursor, kora icons                                                                  |
+| `fonts`                                                     | `~/.local/share/fonts/Fira_Sans`                             | Fira Sans, which the bar, rofi and hyprlock use                                                          |
+| `cursors`                                                   | `~/.local/share/icons/ArcStarry-cursors`                     | the cursor theme                                                                                         |
+| `zsh`                                                       | `~/.zshrc`                                                   | shell config                                                                                             |
+| `ohmyposh`                                                  | `~/Documents/mytheme_v2.toml`                                | prompt theme `.zshrc` loads                                                                              |
+| `systemd`                                                   | `~/.config/systemd/user/hyprland-session.target`             | started by `autostart.lua`                                                                               |
+| `xdg-desktop-portal`                                        | `~/.config/xdg-desktop-portal/portals.conf`                  | Hyprland portal first                                                                                    |
 
 Stow `systemd`, `xdg-desktop-portal` and `ohmyposh` with `--no-folding`, so
 stow doesn't turn `~/.config/systemd` or `~/Documents` into a link to the repo.
@@ -116,6 +121,16 @@ at the same moment. Step onto an empty workspace and it pours back out.
 Three sections: the time with the day and date under it, current conditions,
 and a three-day forecast.
 
+Only the workspace decides. Dropping a panel out of the bar leaves the widget
+where it is — the panels are drawn over the top of it — so opening the settings,
+the wallpaper picker or the power menu no longer throws the clock back into the
+bar and out again.
+
+While the widget has the time, the bar's clock folds away and a calendar button
+unfolds into the gap it leaves, so the calendar is still one click away from the
+middle of the bar. The two trade places: the button folds itself away again as
+the widget is sucked in and the clock returns.
+
 Weather comes from [Open-Meteo](https://open-meteo.com/), which needs no API
 key. It refreshes every 15 minutes, and retries every 20 seconds until the
 first success, since the network is usually not up yet at login.
@@ -126,7 +141,7 @@ is `00000KT` and north is `360`. The arrow points the way an aviation wind barb
 does, at the direction the wind comes from. `QNH` is pressure at mean sea level
 in hPa.
 
-Text colour is measured, not themed. matugen derives the palette from the
+Matugen derives the palette from the
 wallpaper, but light and dark are a user choice, so a pale wallpaper can arrive
 with a dark palette. The widget samples the brightness of the wallpaper behind
 it and picks white or near-black ink, and samples again when the wallpaper
@@ -137,7 +152,7 @@ changes.
 Three ways, all of which end up in the same place:
 
 - **Settings panel** → Statusbar tab.
-- **Notification centre** → click the place name above the weather. It becomes
+- **Control centre** → click the place name above the weather. It becomes
   a text field; Enter or clicking away saves it.
 - **IPC:**
 
@@ -153,7 +168,7 @@ binding, so the widget re-geocodes without being told.
 ## Settings
 
 The separate ML4W settings app is replaced by a panel that drops out of the
-bar, like the notification centre. Open it three ways:
+bar, like the control centre. Open it three ways:
 
 - the **Settings** button or the theme icon in the sidebar
 - `qs ipc call settings toggle`
@@ -183,18 +198,18 @@ Changing a Hyprland variant runs `hyprctl reload`.
 SUPER is the modifier. `SUPER + CTRL + K` shows the full list; the source is
 `hypr/.config/hypr/conf/keybindings/gabriel.lua`. The ones worth knowing:
 
-| Keys | Does |
-| --- | --- |
-| `SUPER + RETURN` / `B` / `E` | terminal, browser, file manager |
-| `SUPER + CTRL + RETURN` | application launcher |
-| `SUPER + SPACE` | expand the bar and give it keyboard focus |
-| `SUPER + CTRL + S` | sidebar |
-| `SUPER + CTRL + W` | wallpaper picker |
-| `SUPER + V` | clipboard history |
-| `SUPER + ALT + M` | the floating bubble system monitor |
-| `SUPER + SHIFT + M` | light / dark |
-| `SUPER + CTRL + P` | power menu |
-| `SUPER + CTRL + L` | lock |
+| Keys                                      | Does                                              |
+| ----------------------------------------- | ------------------------------------------------- |
+| `SUPER + RETURN` / `B` / `E`              | terminal, browser, file manager                   |
+| `SUPER + CTRL + RETURN`                   | application launcher                              |
+| `SUPER + SPACE`                           | expand the bar and give it keyboard focus         |
+| `SUPER + CTRL + S`                        | sidebar                                           |
+| `SUPER + CTRL + W`                        | wallpaper picker                                  |
+| `SUPER + V`                               | clipboard history                                 |
+| `SUPER + ALT + M`                         | the floating bubble system monitor                |
+| `SUPER + SHIFT + M`                       | light / dark                                      |
+| `SUPER + CTRL + P`                        | power menu                                        |
+| `SUPER + CTRL + L`                        | lock                                              |
 | `SUPER + ALT + F` / `ALT + S` / `ALT + A` | full-screen, area, and text-from-area screenshots |
 
 ## Power menu
@@ -213,8 +228,8 @@ SDDM runs on.
 
 ## Notifications
 
-swaync still handles notifications. The bar's own panel shows the count and
-hands the list over to swaync's window.
+swaync still handles notifications. The control centre shows the count and hands
+the list over to swaync's window.
 
 ## Changes from ML4W
 
@@ -230,6 +245,7 @@ hands the list over to swaync's window.
 - about 20 scripts nothing calls
 - matugen outputs for the removed apps
 - the fastfetch toggle in the sidebar
+- Dock, I like more screen real estate, so I removed the app.
 
 **Replaced:**
 
@@ -253,6 +269,7 @@ hands the list over to swaync's window.
 **Mine, on top of ML4W:**
 
 - the Quickshell bar and its panels
+- The keyboard layout display
 - the desktop time and weather widget
 - the keybindings and the fluidDrop animation
 - the window rules, and the hypridle, kitty, fastfetch, nvim and vim configs

@@ -7,7 +7,7 @@ import QtQuick.Controls
 import qs.CustomTheme
 
 // The settings that used to live in the separate ML4W Dotfiles Settings app,
-// as a panel that drops out of the status bar like the notification centre.
+// as a panel that drops out of the status bar like the control centre.
 //
 // This is only the content — the silhouette, translucency and drop animation
 // come from the BarPanel that hosts it.

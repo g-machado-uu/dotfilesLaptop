@@ -5,7 +5,7 @@ import QtQuick.Layouts
 import qs.CustomTheme
 import qs.shared
 
-// The Bluetooth device list, shown in place of the notification panel's main
+// The Bluetooth device list, shown in place of the control centre's main
 // page. It connects and disconnects known devices; pairing a brand new one
 // still wants a proper agent, so that stays with blueman.
 Item {

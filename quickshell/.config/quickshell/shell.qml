@@ -28,8 +28,11 @@ ShellRoot {
         barHeight: bar.visible ? bar.reservedHeight : 0
         location: bar.settings.weather.location
         timeFormat: bar.settings.clock.format
-        // A dropped panel would otherwise land on top of the widget.
-        suppressed: bar.openPanel !== ""
+        // The widget deliberately stays out while a bar panel is dropped. The
+        // panels belong to the bar and are drawn over the top of it, so they
+        // are legible against the widget; sending the widget away instead meant
+        // the clock jumped back into the bar every time the settings, wallpaper
+        // or power panel was opened, and jumped out again on closing.
     }
 
     StatusbarWindow {

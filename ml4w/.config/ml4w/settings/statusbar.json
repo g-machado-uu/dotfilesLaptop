@@ -12,7 +12,8 @@
             "media",
             "launcher",
             "clock",
-            "notifications"
+            "calendar",
+            "controlcentre"
         ],
         "right": [
             "updates",

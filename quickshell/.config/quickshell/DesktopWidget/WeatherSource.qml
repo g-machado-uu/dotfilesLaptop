@@ -4,7 +4,7 @@ import QtQuick
 
 // Weather for the desktop widget, from Open-Meteo (free, no key, no account).
 //
-// The notification panel fetches its own copy of roughly the same data; this one
+// The control centre fetches its own copy of roughly the same data; this one
 // is kept separate because it needs three extra current readings (humidity,
 // apparent temperature, wind) and a day more of forecast, and because the two
 // surfaces come and go independently — sharing one fetch would mean one of them

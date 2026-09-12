@@ -6,7 +6,7 @@ import QtQuick.Controls
 import qs.CustomTheme
 import qs.shared
 
-// The Wi-Fi picker, shown in place of the notification panel's main page.
+// The Wi-Fi picker, shown in place of the control centre's main page.
 // Everything goes through nmcli, so it needs nothing beyond NetworkManager.
 Item {
     id: page

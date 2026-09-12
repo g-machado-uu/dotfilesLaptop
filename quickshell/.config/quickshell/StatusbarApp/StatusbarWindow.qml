@@ -12,7 +12,7 @@ import qs.CalendarApp
 import qs.PowerApp
 import qs.SidebarApp
 import qs.ClipboardApp
-import qs.NotificationsApp
+import qs.ControlCentreApp
 import qs.MediaApp
 import qs.WallpaperApp
 import qs.SettingsApp
@@ -58,7 +58,7 @@ PanelWindow {
         "bar":    { "height": 36, "reservedHeight": 36, "enabled": true, "alwaysExpanded": false },
         "pill":   { "collapsedWidth": 0, "expandedWidth": 680, "radius": 18, "flareRadius": 18, "animationDuration": 350 },
         "modules":{ "left": ["terminal", "workspaces"],
-                    "center": ["launcher", "clock", "swaync"],
+                    "center": ["launcher", "clock", "calendar", "controlcentre"],
                     "right": ["updates", "battery", "powerprofile", "volume", "systemtray", "keyboard", "clipboard", "power"] },
         "border": { "width": 0, "colorTop": "", "colorBottom": "" },
         "opacity":{ "collapsed": 0.82, "expanded": 0.9 },
@@ -304,6 +304,19 @@ PanelWindow {
         }
     }
     Component { id: cSwaync;     SwayncModule {} }
+    // The clock's opposite number: it unfolds into the gap the clock leaves
+    // while the desktop widget has the time, so the calendar is still one
+    // click away from the middle of the bar.
+    Component {
+        id: cCalendar
+        CalendarModule {
+            shown: root.hideClock
+            // Rebuild the keyboard navigation list as it folds in and out, the
+            // same way the clock does.
+            onCollapsedChanged: Qt.callLater(root.rebuildNavItems)
+            onClicked: root.togglePanel("calendar")
+        }
+    }
     Component {
         id: cMedia
         MediaModule {
@@ -314,9 +327,9 @@ PanelWindow {
         }
     }
     Component {
-        id: cNotifications
-        NotificationsModule {
-            onClicked: root.togglePanel("notifications")
+        id: cControlCentre
+        ControlCentreModule {
+            onClicked: root.togglePanel("controlcentre")
         }
     }
     // True while a system-tray context menu is open. Kept at window scope so
@@ -374,6 +387,7 @@ PanelWindow {
             panelFlare: pill.flare
             panelRadius: pill.bottomRadius
             panelOpacity: root.settings.opacity.expanded
+            panelGap: Math.max(0, (root.barHeight - height) / 2)
         }
     }
 
@@ -382,8 +396,13 @@ PanelWindow {
         "workspaces": cWorkspaces,
         "launcher":   cLauncher,
         "clock":      cClock,
+        "calendar":   cCalendar,
         "swaync":     cSwaync,
-        "notifications": cNotifications,
+        "controlcentre": cControlCentre,
+        // The control centre was called "notifications" when it was only a
+        // notification list. Kept as an alias so an existing statusbar.json
+        // keeps working.
+        "notifications": cControlCentre,
         "media":         cMedia,
         "systemtray": cSystemTray,
         "keyboard":   cKeyboard,
@@ -564,11 +583,22 @@ PanelWindow {
     }
 
     IpcHandler {
+        target: "controlcentre"
+        function toggle(): void { root.togglePanel("controlcentre") }
+        function open(): void { root.openPanel = "controlcentre" }
+        function close(): void { root.closePanel("controlcentre") }
+        function isOpen(): bool { return root.openPanel === "controlcentre" }
+    }
+
+    // The control centre answered to "notifications" while it was only a
+    // notification list. Kept so existing keybindings and scripts still reach
+    // it under the old name.
+    IpcHandler {
         target: "notifications"
-        function toggle(): void { root.togglePanel("notifications") }
-        function open(): void { root.openPanel = "notifications" }
-        function close(): void { root.closePanel("notifications") }
-        function isOpen(): bool { return root.openPanel === "notifications" }
+        function toggle(): void { root.togglePanel("controlcentre") }
+        function open(): void { root.openPanel = "controlcentre" }
+        function close(): void { root.closePanel("controlcentre") }
+        function isOpen(): bool { return root.openPanel === "controlcentre" }
     }
 
     IpcHandler {
@@ -892,13 +922,26 @@ PanelWindow {
             flare: pill.flare
             cornerRadius: pill.bottomRadius
             backgroundOpacity: root.settings.opacity.expanded
+            // A panel hanging off a module hangs off that module's *bottom*,
+            // which is a few pixels above the bar's: the modules are 30px tall
+            // and centred in a taller bar. Left at zero the panel's top edge
+            // would start inside the bar and its flares would curl against the
+            // bar's fill instead of out of its underside. Panels anchored to
+            // the bar body itself already start in the right place.
+            gap: (anchorItem && anchorItem !== pill)
+                ? Math.max(0, (pill.height - anchorItem.height) / 2)
+                : 0
         }
 
         BarDropdown {
             id: calendarPanel
-            // Falls back to the centre group if the clock has been removed from
-            // the bar, so the keybinding still puts the calendar somewhere sane.
-            anchorItem: root.moduleRefs["clock"] || centerArea
+            // Hangs off whichever of the two centre modules is currently out:
+            // the clock normally, and the calendar button that replaces it
+            // while the desktop widget has the time. Falls back to the bar
+            // itself if neither is placed, so the keybinding still puts the
+            // calendar somewhere sane.
+            anchorItem: (root.hideClock ? root.moduleRefs["calendar"] : null)
+                || root.moduleRefs["clock"] || root.moduleRefs["calendar"] || pill
             open: root.openPanel === "calendar"
             onDismissed: root.closePanel("calendar")
             panelWidth: 340
@@ -946,18 +989,18 @@ PanelWindow {
         }
 
         BarDropdown {
-            id: notificationsPanel
+            id: controlCentrePanel
             // Dropped from the middle of the bar, like the other wide panels.
             anchorItem: pill
-            open: root.openPanel === "notifications"
-            onDismissed: root.closePanel("notifications")
+            open: root.openPanel === "controlcentre"
+            onDismissed: root.closePanel("controlcentre")
             panelWidth: 420
             panelHeight: 528
             panelContent: Component {
-                NotificationPanel {
-                    isOpen: root.openPanel === "notifications"
+                ControlCentrePanel {
+                    isOpen: root.openPanel === "controlcentre"
                     location: root.settings.weather.location
-                    onCloseRequested: root.closePanel("notifications")
+                    onCloseRequested: root.closePanel("controlcentre")
                 }
             }
         }
