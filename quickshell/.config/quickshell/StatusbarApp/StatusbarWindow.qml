@@ -196,6 +196,38 @@ PanelWindow {
         return updated
     }
 
+    // Persist a string setting into the master file and return the updated text.
+    // Mirrors persistBarFlag: a regex replace while the key is already there (so
+    // the file's formatting and comments survive), a JSON rewrite of the parsed
+    // document when it is not, and no write at all when the file is non-empty
+    // and unparseable. The key is matched on its own, not within its group, so
+    // it has to be unique across the document — "location" is.
+    function persistString(group, key, value): string {
+        let file = root.masterFile()
+        let src = file.text()
+        let escaped = String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"')
+        let re = new RegExp('("' + key + '"\\s*:\\s*)"(?:[^"\\\\]|\\\\.)*"')
+        let updated
+        if (re.test(src)) {
+            updated = src.replace(re, (m, p1) => p1 + '"' + escaped + '"')
+        } else {
+            let obj = root.parseSettings(src)
+            if (obj === undefined && src && src.trim() !== "") {
+                console.warn("statusbar settings: master file is not valid"
+                    + " JSON; leaving it untouched instead of overwriting.")
+                return src
+            }
+            if (typeof obj !== "object" || obj === null)
+                obj = {}
+            if (obj[group] === undefined)
+                obj[group] = {}
+            obj[group][key] = value
+            updated = JSON.stringify(obj, null, 4) + "\n"
+        }
+        file.setText(updated)
+        return updated
+    }
+
     property int barHeight: settings.bar.height
     // Vertical space reserved for the bar. The bar sits flush against the top
     // edge, so this is simply the bar's own height: windows tile immediately
@@ -589,6 +621,16 @@ PanelWindow {
         function collapse(): void { root.barExpanded = false }
         // Re-read statusbar.json and apply the changes.
         function reload(): void { root.reloadSettings() }
+        // The place the weather widgets look up. The bar owns the write, so the
+        // settings panel and the notification centre both go through here
+        // instead of editing statusbar.json themselves.
+        function weatherLocation(): string { return root.settings.weather.location }
+        function setWeatherLocation(location: string): void {
+            let name = location.trim()
+            if (name === "")
+                return
+            root.applySettings(root.persistString("weather", "location", name))
+        }
     }
 
     color: "transparent"

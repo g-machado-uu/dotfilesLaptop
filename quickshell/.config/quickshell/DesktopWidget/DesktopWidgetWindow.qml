@@ -95,6 +95,14 @@ PanelWindow {
     }
 
     // Tall enough for the content plus room for the clock's halo to fall.
+    //
+    // This must not change while the widget is animating. The sections are kept
+    // in the layout even when they are invisible for exactly that reason: a
+    // section dropping out of the Column would shorten the window, and every
+    // height change is a layer-surface reconfigure — a new buffer, a round trip
+    // to the compositor, and measurably ~50ms of dropped frames. Three sections
+    // appearing one after the other meant three of those, landing right in the
+    // middle of the pour-out. That was the stutter.
     implicitHeight: stack.y + stack.implicitHeight + 48
 
     // The point everything converges on: the middle of the bar, which is where
@@ -173,6 +181,7 @@ PanelWindow {
         id: weather
         location: w.location
         active: w._shown
+        busy: w.animating
     }
 
     // The workspace on this widget's own monitor, falling back to the focused
@@ -272,7 +281,9 @@ PanelWindow {
         readonly property real funnelOffset: w.funnelY - (stack.y + sec.y)
 
         width: stack.width
-        visible: opacity > 0
+        // Never taken out of the layout, only faded out: see the window's
+        // implicitHeight above. A fully transparent subtree is skipped by the
+        // renderer anyway, so this costs nothing while the widget is away.
         opacity: Math.max(0, Math.min(1, 1.3 - 1.3 * sec.p))
 
         transform: Scale {

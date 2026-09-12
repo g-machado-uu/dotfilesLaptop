@@ -153,8 +153,9 @@ Item {
             root.pollAudio()
             root.refreshWeather()
         } else {
-            // Always reopen on the main page.
+            // Always reopen on the main page, never mid-edit.
             root.page = ""
+            placeRow.editing = false
         }
     }
 
@@ -585,9 +586,84 @@ Item {
         Divider {}
 
         // --- WEATHER ---
-        SectionLabel {
-            text: root.resolvedPlace !== "" ? root.resolvedPlace.toUpperCase()
-                                            : root.location.toUpperCase()
+        // The place name doubles as its own setting: click it and type another
+        // one. The status bar owns statusbar.json, so the new value is handed
+        // to it over IPC and comes back here as a changed `location` binding,
+        // which re-geocodes. The desktop widget follows the same binding.
+        Item {
+            id: placeRow
+            Layout.fillWidth: true
+            implicitHeight: 24
+            property bool editing: false
+
+            function beginEdit(): void {
+                placeField.text = root.location
+                placeRow.editing = true
+                placeField.forceActiveFocus()
+                placeField.selectAll()
+            }
+
+            function commit(): void {
+                if (!placeRow.editing)
+                    return
+                placeRow.editing = false
+                const v = placeField.text.trim()
+                if (v === "" || v === root.location)
+                    return
+                Quickshell.execDetached(["qs", "ipc", "call", "statusbar",
+                    "setWeatherLocation", v])
+            }
+
+            SectionLabel {
+                id: placeLabel
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                visible: !placeRow.editing
+                text: (root.resolvedPlace !== "" ? root.resolvedPlace
+                                                 : root.location).toUpperCase()
+                opacity: placeMouse.containsMouse ? 1 : 0.7
+            }
+
+            MouseArea {
+                id: placeMouse
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                width: placeLabel.implicitWidth
+                height: parent.height
+                visible: !placeRow.editing
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: placeRow.beginEdit()
+            }
+
+            TextField {
+                id: placeField
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                width: 220
+                implicitHeight: 24
+                visible: placeRow.editing
+                placeholderText: "Belfast, UK"
+                color: Theme.primary
+                placeholderTextColor: Qt.alpha(Theme.primary, 0.5)
+                selectionColor: Theme.primary
+                selectedTextColor: Theme.background
+                font.family: Theme.fontFamily
+                font.pixelSize: 12
+                leftPadding: 8
+                rightPadding: 8
+                topPadding: 0
+                bottomPadding: 0
+                // Saved on Enter and when the field loses the keyboard.
+                onEditingFinished: placeRow.commit()
+                Keys.onEscapePressed: placeRow.editing = false
+                background: Rectangle {
+                    radius: 6
+                    color: "transparent"
+                    border.color: Theme.primary
+                    border.width: placeField.activeFocus ? 2 : 1
+                }
+            }
         }
 
         RowLayout {

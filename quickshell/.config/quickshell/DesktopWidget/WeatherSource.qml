@@ -21,6 +21,12 @@ Item {
     // refreshing weather nobody can see.
     property bool active: true
 
+    // Set by the widget while its sections are in flight. A fetch landing
+    // mid-animation would parse a document, rebuild the forecast row and resize
+    // the surface in one of the frames that should have been spent moving, so
+    // refreshes wait for the widget to stand still.
+    property bool busy: false
+
     readonly property bool loaded: _loaded
     property bool _loaded: false
     property string error: ""
@@ -220,13 +226,29 @@ Item {
         interval: src._loaded ? 15 * 60 * 1000 : 20 * 1000
         repeat: true
         running: true
-        onTriggered: src.refresh()
+        onTriggered: src.refreshWhenStill()
+    }
+
+    // Hold a refresh back until nothing is moving, then run it.
+    function refreshWhenStill(): void {
+        stillness.restart()
+    }
+
+    Timer {
+        id: stillness
+        interval: 250
+        onTriggered: {
+            if (src.busy)
+                stillness.restart()
+            else
+                src.refresh()
+        }
     }
 
     // Catch up as soon as the widget comes back on screen, so a machine that
     // was asleep for hours is not showing yesterday's weather.
     onActiveChanged: {
         if (src.active)
-            src.refresh()
+            src.refreshWhenStill()
     }
 }
