@@ -639,26 +639,26 @@ Item {
                     }
                 }
 
-                // --- STATUSBAR ALWAYS EXPANDED (Quickshell) ---
+                // --- DESKTOP WEATHER WIDGET (Quickshell) ---
                 RowLayout {
                     Layout.fillWidth: true
-                    Text { text: "Statusbar Expanded"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
+                    Text { text: "Weather Widget"; color: Theme.primary; font.family: Theme.fontFamily; font.pixelSize: 16 }
                     Item { Layout.fillWidth: true }
                     ML4WSwitch {
-                        id: statusbarExpandedSwitch
+                        id: weatherWidgetSwitch
                         property bool ready: false
-                        // Read the current state from the "alwaysExpanded" flag
-                        // in the master file: the ml4w-statusbar override when it
-                        // exists, otherwise the shipped statusbar.json. A missing
-                        // file or flag counts as off.
+                        // Read the "desktopWidget" flag from the master file: the
+                        // ml4w-statusbar override when it exists, otherwise the
+                        // shipped statusbar.json. A missing file or flag counts
+                        // as on, matching the statusbar's own default.
                         Process {
-                            command: ["bash", "-c", "f=~/.config/ml4w-statusbar/statusbar.json; [ -f \"$f\" ] || f=~/.config/ml4w/settings/statusbar.json; grep -q '\"alwaysExpanded\"[[:space:]]*:[[:space:]]*true' \"$f\" && echo 1 || echo 0"]
+                            command: ["bash", "-c", "f=~/.config/ml4w-statusbar/statusbar.json; [ -f \"$f\" ] || f=~/.config/ml4w/settings/statusbar.json; grep -q '\"desktopWidget\"[[:space:]]*:[[:space:]]*false' \"$f\" && echo 0 || echo 1"]
                             running: root.isOpen
                             stdout: StdioCollector {
                                 onStreamFinished: {
-                                    console.log("Test for Statusbar Expanded: " + this.text.trim())
-                                    statusbarExpandedSwitch.checked = (this.text.trim() === "1")
-                                    statusbarExpandedSwitch.ready = true
+                                    console.log("Test for Weather Widget: " + this.text.trim())
+                                    weatherWidgetSwitch.checked = (this.text.trim() === "1")
+                                    weatherWidgetSwitch.ready = true
                                 }
                             }
                         }
@@ -668,9 +668,9 @@ Item {
                             // the new state via IPC. `checked` already
                             // reflects the post-click position.
                             let ipcCmd = checked
-                            ? "qs ipc call statusbar alwaysExpand"
-                            : "qs ipc call statusbar autoCollapse"
-                            console.log("Statusbar Expanded cmd: " + ipcCmd)
+                            ? "qs ipc call statusbar enableWeatherWidget"
+                            : "qs ipc call statusbar disableWeatherWidget"
+                            console.log("Weather Widget cmd: " + ipcCmd)
                             Quickshell.execDetached(["bash", "-c", ipcCmd])
                         }
                     }

@@ -67,7 +67,10 @@ PanelWindow {
         // Free-text place name for the notification panel's weather. Anything
         // after the first comma is a hint used to pick between same-named
         // places (e.g. "Belfast, UK" vs "Belfast, US").
-        "weather": { "location": "Belfast, UK" }
+        // desktopWidget: whether the time/weather widget is allowed onto an
+        // empty workspace at all. Off means the bar keeps the clock at all
+        // times and the widget never appears.
+        "weather": { "location": "Belfast, UK", "desktopWidget": true }
     })
 
     property var settings: defaultSettings
@@ -163,14 +166,17 @@ PanelWindow {
         root.settings = merged
     }
 
-    // Persist a bar.<key> boolean into the master file and return the updated
-    // text. A regex replace is used when the key is already present (so the
+    // Persist a <group>.<key> boolean into the master file and return the
+    // updated text. A regex replace is used when the key is already present (so
     // file's formatting/comments are kept); when the key is missing (e.g. an
     // override file that did not list it) it falls back to a JSON rewrite of the
     // parsed document. If the file cannot be parsed at all the write is skipped
     // rather than replaced with an empty object, so a malformed hand-edited
     // override is never wiped — its current text is returned unchanged.
-    function persistBarFlag(key, on): string {
+    //
+    // Like persistString, the key is matched on its own rather than within its
+    // group, so it has to be unique across the document.
+    function persistFlag(group, key, on): string {
         let file = root.masterFile()
         let src = file.text()
         let re = new RegExp('("' + key + '"\\s*:\\s*)(true|false)')
@@ -187,9 +193,9 @@ PanelWindow {
             }
             if (typeof obj !== "object" || obj === null)
                 obj = {}
-            if (obj.bar === undefined)
-                obj.bar = {}
-            obj.bar[key] = on
+            if (obj[group] === undefined)
+                obj[group] = {}
+            obj[group][key] = on
             updated = JSON.stringify(obj, null, 4) + "\n"
         }
         file.setText(updated)
@@ -197,7 +203,7 @@ PanelWindow {
     }
 
     // Persist a string setting into the master file and return the updated text.
-    // Mirrors persistBarFlag: a regex replace while the key is already there (so
+    // Mirrors persistFlag: a regex replace while the key is already there (so
     // the file's formatting and comments survive), a JSON rewrite of the parsed
     // document when it is not, and no write at all when the file is non-empty
     // and unparseable. The key is matched on its own, not within its group, so
@@ -252,7 +258,7 @@ PanelWindow {
     // updated text, which updates settings.bar.enabled and therefore the
     // barEnabled binding above.
     function setEnabled(on: bool): void {
-        applySettings(persistBarFlag("enabled", on))
+        applySettings(persistFlag("bar", "enabled", on))
     }
 
     // Keep the pill expanded regardless of hover. Set via IPC
@@ -275,7 +281,18 @@ PanelWindow {
     // Persist the alwaysExpanded state into the master file and apply it.
     // Mirrors setEnabled.
     function setAlwaysExpanded(on: bool): void {
-        applySettings(persistBarFlag("alwaysExpanded", on))
+        applySettings(persistFlag("bar", "alwaysExpanded", on))
+    }
+
+    // Whether the desktop time/weather widget is allowed onto an empty
+    // workspace. shell.qml hands this to the widget; with it off the widget
+    // never appears and the bar keeps its own clock permanently.
+    property bool weatherWidgetEnabled: settings.weather.desktopWidget
+
+    // Persist the desktop widget flag into the master file and apply it.
+    // Mirrors setEnabled.
+    function setWeatherWidget(on: bool): void {
+        applySettings(persistFlag("weather", "desktopWidget", on))
     }
 
     // --- MODULE PLACEMENT ---
@@ -655,6 +672,17 @@ PanelWindow {
         // settings panel and the notification centre both go through here
         // instead of editing statusbar.json themselves.
         function weatherLocation(): string { return root.settings.weather.location }
+        // The desktop time/weather widget. Off means it never appears and the
+        // bar's own clock stays out permanently. Toggled from the sidebar
+        // switch; the read returns "1" / "0" for a shell caller.
+        function weatherWidget(): string {
+            return root.weatherWidgetEnabled ? "1" : "0"
+        }
+        function enableWeatherWidget(): void { root.setWeatherWidget(true) }
+        function disableWeatherWidget(): void { root.setWeatherWidget(false) }
+        function toggleWeatherWidget(): void {
+            root.setWeatherWidget(!root.weatherWidgetEnabled)
+        }
         function setWeatherLocation(location: string): void {
             let name = location.trim()
             if (name === "")

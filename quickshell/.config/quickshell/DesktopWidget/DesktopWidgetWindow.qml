@@ -33,6 +33,10 @@ PanelWindow {
     property string location: "Belfast, UK"
     // Qt date/time formats, kept in step with the bar's own clock.
     property string timeFormat: "HH:mm"
+    // Whether the widget is wanted at all (statusbar.json, weather.desktopWidget,
+    // toggled from the sidebar). Off means it never comes out, so the bar's own
+    // clock is never folded away.
+    property bool widgetEnabled: true
 
     // True while the widget is on screen. The bar reads the companion flag
     // below to decide whether to show its own clock.
@@ -194,11 +198,12 @@ PanelWindow {
     readonly property bool workspaceEmpty: workspace !== null
         && workspace.toplevels.values.length === 0
 
-    // Only the workspace decides. A dropped bar panel deliberately does not:
+    // Beyond the setting, only the workspace decides. A dropped bar panel
+    // deliberately does not:
     // the panels are drawn over this surface anyway, and taking the widget away
     // under them made opening the settings or wallpaper panel throw the clock
     // back into the bar and out again.
-    readonly property bool wantShown: workspaceEmpty && !specialOpen
+    readonly property bool wantShown: widgetEnabled && workspaceEmpty && !specialOpen
 
     // Hyprland fires several events for one action; settle before animating so
     // the widget never flickers on the way between two empty workspaces.

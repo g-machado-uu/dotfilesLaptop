@@ -4,31 +4,36 @@ My own take on ML4W dotfiles. Repo setup to be used with gnu stow.
 
 ![The desktop widget on an empty workspace](docs/img/desktop-widget.jpg)
 
-The idea is to use the power of Quickshell to have most of the apps dropping out of the statusbar. There is a time and weather widget above, which lives on empty workspaces only.
+The idea is to use the power of Quickshell to have most of the apps dropping
+out of the statusbar. There is a time and weather widget above, which lives on
+empty workspaces only, but it can be toggled in the top bar menu, which is  
+called via SUPER+CTRL+S.
 
 It started as [ML4W OS](https://github.com/mylinuxforwork/dotfiles) 2.14.1 by
-Stephan Raabe, and a good part of it is still his work — including the
-wallpapers. ML4W is GPL-3.0, so this repo is too (see `LICENSE`). What I
-changed in his files is listed under [Changes from ML4W](#changes-from-ml4w).
+Stephan Raabe, and a good part of it is still his work, which includes the
+wallpapers, updates script, and a lot more is carried over from ML4W dotfiles.
+What I changed in his files is listed under [Changes from ML4W](#changes-from-ml4w).
 
-This customisation is heavily assisted by Claude AI. Nobody with twin toddlers and a full-time job that has nothing to do with developing has the time to configure all this. I wanted something to fit my needs based on the great job done by Stephan Raabe and his ML4W dotfiles.
+This customisation is heavily assisted by Claude AI. Nobody with twin toddlers
+and a full-time job that has nothing to do with developing has the time to
+configure all this. I wanted something to fit my needs based on the great
+job done by Stephan Raabe and his ML4W dotfiles.
 
 ## Screenshots
 
-The bar. Workspaces and a terminal button on the left, media, launcher, clock
-and the control centre in the centre, the tray and the system modules on the
-right.
-Which modules appear, and in which order, comes from
-`~/.config/ml4w/settings/statusbar.json`.
+Following ML4W philosophy, the items displayed in the quickshell statusbar
+can be modified by changing `~/.config/ml4w/settings/statusbar.json`.
 
 ![Status bar](docs/img/statusbar.png)
 
 <details>
-<summary>The panels that drop out of it</summary>
+<summary>The apps that drop down from the statusbar</summary>
 
 Control centre — toggles, sliders, the weather and the notification count.
+At the moment, notifications are still handled by Swaync.
 Wi-Fi and Bluetooth open sub-pages in place. Clicking the place name above the
-weather turns it into a text field. It is the `controlcentre` module, a set of
+weather turns it into a text field, which modifies the fetch to display the weather
+in both control centre and the widget. It is the `controlcentre` module, a set of
 sliders in the bar, with a mark under the glyph while notifications are waiting
 and a bar there while Do Not Disturb is on. It still answers to its old name,
 `notifications`, in both `statusbar.json` and `qs ipc`.
@@ -39,7 +44,7 @@ The Settings panel, on its Statusbar tab.
 
 ![Settings panel](docs/img/settings-panel.jpg)
 
-The sidebar — bar and gamemode switches, wallpaper and theme, and a way into
+The sidebar, weather widget and gamemode switches, wallpaper and theme, and a way into
 Settings.
 
 ![Sidebar](docs/img/sidebar.jpg)
@@ -53,7 +58,7 @@ kitty, rofi, btop and swaync.
 
 ## Packages
 
-Each folder is a stow package that mirrors `~`, so `hypr/.config/hypr` becomes
+Each folder is a [stow](https://www.gnu.org/software/stow/) package that mirrors `~`, so `hypr/.config/hypr` becomes
 `~/.config/hypr`.
 
 | Package                                                     | Becomes                                                      | What it is                                                                                               |
@@ -79,6 +84,8 @@ stow doesn't turn `~/.config/systemd` or `~/Documents` into a link to the repo.
 
 ## Installing on a new machine
 
+Please, verify the packages below. Remember that Copr, AUR, are user packages.
+
 1. **Packages.** On Fedora, enable the COPRs listed at the top of
    `packages-fedora.txt`, then:
 
@@ -92,31 +99,37 @@ stow doesn't turn `~/.config/systemd` or `~/Documents` into a link to the repo.
    paru -S --needed $(grep -v '^#' packages-arch.txt)
    ```
 
-2. **Things no package manager ships.** Both package files list them at the
+   Why am I not listing others? Those are the distros I run, I have not tested this in anything else.
+
+2. **Things to dowloand.** Both package files list them at the
    top: matugen, oh-my-posh, nwg-displays, the kora icons, grimblast on
    Fedora, and the calculator and emoji-picker flatpaks.
 
 3. **Stow everything:**
 
-   ```bash
-   cd ~/.dotfilesLaptop
-   stow hypr quickshell ml4w matugen rofi swaync kitty fastfetch btop qt6ct \
-        nvim vim browserflags gtk-2.0 gtk-3.0 gtk-4.0 xsettingsd xresources \
-        fonts cursors zsh
-   stow --no-folding systemd xdg-desktop-portal ohmyposh
-   fc-cache -f
-   ```
+Use GNU Stow to manage these dotfiles.
 
-   `~/.zshrc` is usually a plain file already, so move it aside before
-   `stow zsh`.
+```bash
+cd ~/.dotfilesLaptop
+stow hypr quickshell ml4w matugen rofi swaync kitty fastfetch btop qt6ct \
+     nvim vim browserflags gtk-2.0 gtk-3.0 gtk-4.0 xsettingsd xresources \
+     fonts cursors zsh
+stow --no-folding systemd xdg-desktop-portal ohmyposh
+fc-cache -f
+```
 
-4. **Log in.** Pick Hyprland at the login screen.
+`~/.zshrc` is usually a plain file already, so move it aside before
+`stow zsh`.
+
+1. **Log in.** Pick Hyprland at the login screen.
 
 ## Time and weather widget
 
 The widget sits on an empty workspace. Open a window, or switch to a workspace
 that has one, and it is sucked up into the bar, which takes the clock back over
-at the same moment. Step onto an empty workspace and it pours back out.
+at the same moment. Once you change to an empty workspace, it will be thrown out
+of the statusbar once again, giving place to a calendar icon, which opens ML4W
+calendar app. It can be toggled in the sidebar (which now comes from the top).
 
 Three sections: the time with the day and date under it, current conditions,
 and a three-day forecast.

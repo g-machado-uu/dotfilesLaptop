@@ -27,6 +27,7 @@
         ]
     },
     "weather": {
-        "location": "Belfast, UK"
+        "location": "Carrickfergus, UK",
+        "desktopWidget": true
     }
 }

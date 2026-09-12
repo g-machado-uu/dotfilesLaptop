@@ -27,6 +27,7 @@ ShellRoot {
 
         barHeight: bar.visible ? bar.reservedHeight : 0
         location: bar.settings.weather.location
+        widgetEnabled: bar.weatherWidgetEnabled
         timeFormat: bar.settings.clock.format
         // The widget deliberately stays out while a bar panel is dropped. The
         // panels belong to the bar and are drawn over the top of it, so they
