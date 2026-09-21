@@ -14,7 +14,7 @@ hl.config({
             },
         },
         gaps_in = 2,
-        gaps_out = 14,
+        gaps_out = 7,
     },
     input = {
         kb_layout = "gb,br",
