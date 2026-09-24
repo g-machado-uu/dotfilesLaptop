@@ -14,6 +14,9 @@ hl.on("hyprland.start", function()
 	hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP")
 	hl.exec_cmd("systemctl --user start hyprland-session.target")
 
+	-- Start gnome-keyring early so it holds the password service before KWallet can
+	hl.exec_cmd("gnome-keyring-daemon --start --components=secrets")
+
 	-- Restart portals so they catch the environment
 	hl.exec_cmd("systemctl --user stop xdg-desktop-portal xdg-desktop-portal-hyprland")
 	hl.exec_cmd("systemctl --user start xdg-desktop-portal-hyprland xdg-desktop-portal")
@@ -41,8 +44,8 @@ hl.on("hyprland.start", function()
 	-- Load GTK settings
 	hl.exec_cmd("~/.config/hypr/scripts/gtk.sh")
 
-	-- Start swaync
-	hl.exec_cmd("swaync")
+	-- Start swaync via systemd so D-Bus activation (swaync-client) reuses the same unit instead of racing a second instance
+	hl.exec_cmd("systemctl --user start swaync")
 
 	-- Start hypridle
 	hl.exec_cmd("hypridle")
