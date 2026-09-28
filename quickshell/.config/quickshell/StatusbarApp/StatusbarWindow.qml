@@ -15,6 +15,7 @@ import qs.ControlCentreApp
 import qs.MediaApp
 import qs.WallpaperApp
 import qs.SettingsApp
+import qs.SoundApp
 
 PanelWindow {
     id: root
@@ -467,7 +468,12 @@ PanelWindow {
             onClicked: root.togglePanel("power")
         }
     }
-    Component { id: cVolume;     VolumeModule {} }
+    Component {
+        id: cVolume
+        VolumeModule {
+            onClicked: root.togglePanel("sound")
+        }
+    }
     Component {
         id: cUpdates
         UpdatesModule {
@@ -711,6 +717,15 @@ PanelWindow {
         function open(): void { root.openPanel = "controlcentre" }
         function close(): void { root.closePanel("controlcentre") }
         function isOpen(): bool { return root.openPanel === "controlcentre" }
+    }
+
+    IpcHandler {
+        enabled: root.ipcEnabled
+        target: "sound"
+        function toggle(): void { root.togglePanel("sound") }
+        function open(): void { root.openPanel = "sound" }
+        function close(): void { root.closePanel("sound") }
+        function isOpen(): bool { return root.openPanel === "sound" }
     }
 
     IpcHandler {
@@ -1132,6 +1147,7 @@ PanelWindow {
                     location: root.settings.weather.location
                     weatherWidgetEnabled: root.weatherWidgetEnabled
                     onCloseRequested: root.closePanel("controlcentre")
+                    onSoundRequested: root.openPanel = "sound"
                 }
             }
         }
@@ -1173,6 +1189,24 @@ PanelWindow {
                 PowerPanel {
                     padding: pill.edgeMargin
                     onActionTaken: root.closePanel("power")
+                }
+            }
+        }
+
+        BarDropdown {
+            id: soundPanel
+            // Opened from the bar's speaker and from the control centre's, so
+            // it drops from the middle of the bar like the control centre it
+            // is reached from.
+            anchorItem: pill
+            open: root.openPanel === "sound"
+            onDismissed: root.closePanel("sound")
+            panelWidth: 420
+            panelHeight: Math.min(620, root.screen.height - root.barHeight - 72)
+            panelContent: Component {
+                SoundPanel {
+                    isOpen: root.openPanel === "sound"
+                    onCloseRequested: root.closePanel("sound")
                 }
             }
         }

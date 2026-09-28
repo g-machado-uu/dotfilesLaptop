@@ -102,8 +102,13 @@ RowLayout {
 
     function rebuildNavButtons(): void {
         let a = []
-        for (let i = 0; i < rep.count; i++)
-            a.push(rep.itemAt(i))
+        // Skips buttons not created yet: this runs as each one is added, so
+        // mid-build the later slots are still null.
+        for (let i = 0; i < rep.count; i++) {
+            const b = rep.itemAt(i)
+            if (b)
+                a.push(b)
+        }
         wsRoot.navButtons = a
     }
 
