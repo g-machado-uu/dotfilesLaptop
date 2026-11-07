@@ -56,6 +56,9 @@ hl.on("hyprland.start", function()
 	-- Solaar
 	hl.exec_cmd("solaar --window=hide")
 
+	--filen
+	hl.exec_cmd("/home/gabriel/Applications/Filen")
+
 	-- Start autostart cleanup
 	hl.exec_cmd("~/.config/hypr/scripts/cleanup.sh")
 end)

@@ -6,11 +6,9 @@ return {
         texlab = {
           settings = {
             texlab = {
-              build = {
-                executable = "latexmk",
-                args = { "-pdf", "-interaction=nonstopmode", "-synctex=1", "%f" },
-                onSave = true,
-              },
+              -- No `build` block: VimTeX's continuous latexmk owns build/.
+              -- A texlab onSave build ran a second latexmk into the same
+              -- directory and corrupted the PDF/aux files.
               forwardSearch = {
                 executable = "okular",
                 args = { "--unique", "file:%p#src:%l%f" },
