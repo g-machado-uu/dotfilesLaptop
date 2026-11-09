@@ -27,7 +27,7 @@
         ]
     },
     "weather": {
-        "location": "Greenisland",
+        "location": "Belfast, UK",
         "desktopWidget": true
     }
 }
