@@ -156,7 +156,26 @@ sudo cp -r system/usr/share/sddm/themes/ml4w /usr/share/sddm/themes/
 sudo systemctl enable sddm
 ```
 
-### 6. Shell and terminal multiplexer
+### 6. Lock screen
+
+The lock screen is the `field` theme of
+[qylock](https://github.com/Darkkal44/qylock), a collection of Quickshell and
+SDDM lock screen themes. It is not part of this repository. Its dependencies
+are in `packages-arch.txt`. The repository is cloned to `~/Projects` and its
+Quickshell installer is run, which installs the lock screen to
+`~/.local/share/quickshell-lockscreen` and links the themes back to the clone.
+
+```bash
+git clone https://github.com/Darkkal44/qylock.git ~/Projects/qylock
+cd ~/Projects/qylock
+chmod +x quickshell.sh && ./quickshell.sh
+```
+
+The clone must remain in place, since the installed lock screen reads its
+themes from it. Only the Quickshell part of qylock is used. SDDM keeps the ML4W
+theme from step 5.
+
+### 7. Shell and terminal multiplexer
 
 ```bash
 chsh -s /usr/bin/zsh
@@ -165,7 +184,7 @@ git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 
 The tmux plugins are installed from within tmux with `C-Space I`.
 
-### 7. Session
+### 8. Session
 
 Hyprland is selected at the SDDM login screen.
 
@@ -256,9 +275,11 @@ each application to close before Hyprland exits.
 
 Locking is performed through `loginctl lock-session`, which hypridle handles.
 The lock command in `hypridle.conf` and in the keybinding calls
-`~/.local/share/quickshell-lockscreen/lock.sh`, a Quickshell lock screen that
-is installed separately and is not part of this repository. The previous
-hyprlock commands remain as comments in both files.
+`~/.local/share/quickshell-lockscreen/lock.sh`, the Quickshell lock screen
+from qylock (see [Lock screen](#6-lock-screen)). `lock.sh` uses the `field`
+theme unless another theme name is passed as its first argument, for example
+`lock.sh clockwork/tape`. The previous hyprlock commands remain as comments in
+both files.
 
 On systems with SDDM and an NVIDIA GPU, a black screen after logout is resolved
 by adding `--vt <n>` to the `hyprshutdown` calls in
@@ -319,11 +340,11 @@ baseline.
 
 ## Known limitations
 
-* **Lock screen:** depends on `~/.local/share/quickshell-lockscreen`, which is
-  not tracked here. Without it, `SUPER + CTRL + L` and the idle timeout do not
-  lock the session.
+* **Lock screen:** depends on qylock, which is installed separately. Without
+  it, `SUPER + CTRL + L` and the idle timeout do not lock the session.
 * **Filen:** `autostart.lua` starts `~/Applications/Filen`, an AppImage that is
-  installed manually.
+  installed manually. AppImages require `fuse2`, which is in
+  `packages-arch.txt`.
 * **`SUPER + CTRL + C`** is bound twice, to the calculator and to the calendar.
 
 ## Credits and licences
@@ -335,3 +356,5 @@ baseline.
   (`fonts/.local/share/fonts/Fira_Sans/OFL.txt`).
 * **ArcStarry cursors:** GPL 3.0.
 * **`quickshell/overview`:** a separate project with its own README.
+* **qylock** by Darkkal44, the lock screen. Installed separately, not
+  redistributed here.
