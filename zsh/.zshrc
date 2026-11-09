@@ -159,9 +159,10 @@ function y() {
 }
 alias yc="cd /home/gabriel/.config && y"
 # -----------------------------------------------------
-# SSH Agent 
+# NVM
 # -----------------------------------------------------
-# eval "$(ssh-agent -s)"
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # -----------------------------------------------------
 # ZOXIDE
