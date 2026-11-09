@@ -16,5 +16,5 @@ if [ -d $CACHE_FOLDER ]; then
     rm  -rf $CACHE_FOLDER
     mkdir -p $CACHE_FOLDER
     info "Restore Default Wallpaper"
-    $HOME/.config/ml4w/scripts/ml4w-wallpaper $HOME/.config/ml4w/wallpapers/default.jpg
+    $HOME/.config/ml4w/scripts/ml4w-wallpaper $HOME/Pictures/Wallpapers/default.jpg
 fi

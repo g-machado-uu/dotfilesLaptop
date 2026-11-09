@@ -9,34 +9,28 @@ hl.config({
     general = {
         col = {
             active_border = {
-                colors = {"rgba(a5c8ffff)", "rgba(99c1f1ff)"},
+                colors = {"rgba(adc6ffff)", "rgba(99c1f1ff)"},
                 angle = 90,
             },
         },
-        gaps_in = 2,
-        gaps_out = 7,
+        gaps_in = 4,
+        gaps_out = 13,
     },
     input = {
+        accel_profile = "flat",
         kb_layout = "gb,br",
         kb_options = "grp:alt_shift_toggle,caps:escape_shifted_capslock",
+        kb_variant = "",
         numlock_by_default = true,
     },
 })
 
 -- Monitors
 hl.monitor({
-    output = "DP-5",
+    output = "DP-1",
     disabled = false,
-    mode = "1920x1080@60.00Hz",
-    position = "-1920x-20",
-    scale = 1,
-    cm = "srgb",
-})
-hl.monitor({
-    output = "eDP-1",
-    disabled = false,
-    mode = "1920x1080@60.05Hz",
-    position = "0x-20",
+    mode = "3440x1440@74.98Hz",
+    position = "0x0",
     scale = 1,
     cm = "srgb",
 })

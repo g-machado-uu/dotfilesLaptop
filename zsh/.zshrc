@@ -9,9 +9,9 @@ export EDITOR=nvim
 export ZSH="$HOME/.oh-my-zsh"
 export PATH=$PATH:~/.cargo/bin/
 export PATH=$PATH:~/.local/bin/
-export PATH=$PATH:/home/gabriel/texlive/2026/bin/x86_64-linux/
-export INFOPATH=$INFOPATH:/home/gabriel/texlive/2026/texmf-dist/doc/info
-export MANPATH=$MANPATH:/home/gabriel/texlive/2026/texmf-dist/doc/man
+export PATH=$PATH:/home/gabriel/texlive/bin/x86_64-linux/
+export INFOPATH=$INFOPATH:/home/gabriel/texlive/texmf-dist/doc/info
+export MANPATH=$MANPATH:/home/gabriel/texlive/texmf-dist/doc/man
 
 
 # -----------------------------------------------------
@@ -39,6 +39,8 @@ zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
+autoload edit-command-line; zle -N edit-command-line
+bindkey '^v' edit-command-line
 # -----------------------------------------------------
 # Prompt
 # -----------------------------------------------------
@@ -65,11 +67,11 @@ alias cd='z'
 alias v='$EDITOR'
 alias vim='$EDITOR'
 alias wifi='nmtui'
+alias arch-cleanup='~/.config/ml4w/scripts/ml4w-arch-cleanup'
 alias apps='~/.config/ml4w/bin/ml4w-apps'
 alias screenshot='~/.config/ml4w/bin/ml4w-screenshot'
 alias updates='~/.config/ml4w/scripts/ml4w-install-system-updates'
 alias filemanager='~/.config/ml4w/settings/filemanager'
-alias autostart='~/.config/ml4w/scripts/ml4w-autostart'
 alias lock='hyprlock'
 alias clock='tty-clock'
 alias system='~/.config/ml4w/settings/systemmonitor'
@@ -77,6 +79,7 @@ alias quick='~/.config/ml4w/bin/ml4w-quicklinks'
 alias wallpaper='~/.config/ml4w/bin/ml4w-wallpaper'
 alias settings='qs ipc call settings toggle'
 alias venv='source ~/venv/bin/activate'
+alias notes='venv && cd /mnt/Old_Arch/Ulster/Modules/2025-2026/EEE416/EEE416_Lecture_Notes/'
 alias bg='kitten @ set-background-opacity'
 # -----------------------------------------------------
 # ML4W Apps
@@ -85,7 +88,7 @@ alias bg='kitten @ set-background-opacity'
 alias ml4w-settings='qs ipc call settings toggle'
 alias ml4w-calendar='qs ipc call calendar toggle'
 alias ml4w-hyprland='flatpak run com.ml4w.hyprlandsettings'
-alias ml4w-sidebar='qs ipc call sidebar toggle'
+alias ml4w-sidebar='qs ipc call controlcentre toggle'
 
 # -----------------------------------------------------
 # Scripts
@@ -96,8 +99,13 @@ alias ascii='~/.config/ml4w/scripts/figlet.sh'
 # System
 # -----------------------------------------------------
 
+alias update-grub='sudo grub-mkconfig -o /boot/grub/grub.cfg'
 
-
+# -----------------------------------------------------
+# CMAKE STM32
+# -----------------------------------------------------
+alias cmake_debug='cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=toolchain-arm-none-eabi.cmake -DCMAKE_BUILD_TYPE=Debug && ln -sf build/compile_commands.json compile_commands.json'
+alias cmake_release='cmake -B build-release -S . -DCMAKE_TOOLCHAIN_FILE=toolchain-arm-none-eabi.cmake -DCMAKE_BUILD_TYPE=Release'
 # -----------------------------------------------------
 # Zinit
 # -----------------------------------------------------
@@ -134,7 +142,7 @@ nvim() {
 # PATH
 # -----------------------------------------------------
 export PATH="$HOME/.local/bin:$PATH"
-export PATH="/usr/local/MATLAB/R2025b/bin:$PATH"
+export PATH="$HOME/go/bin:$PATH"
 # -----------------------------------------------------
 # Open the python venv automatically
 # -----------------------------------------------------

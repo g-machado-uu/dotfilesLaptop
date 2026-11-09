@@ -1,8 +1,9 @@
-// Ulster University x Fedora
+// Arch Linux x Aviation — fastfetch config
+// Logo source: better_logo.jpg, background keyed out to transparent
 {
   "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
   "logo": {
-    "source": "~/.config/fastfetch/uu_fedora_logo.png",
+    "source": "~/.config/fastfetch/arch_plane_logo.png",
     "type": "auto",
     "width": 20,
     "padding": {

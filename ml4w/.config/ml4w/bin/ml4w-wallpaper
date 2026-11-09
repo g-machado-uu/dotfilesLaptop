@@ -16,7 +16,7 @@ SEARCH_PATH="$(realpath "$SEARCH_PATH")"
 
 # --- 2. Find Images (Recursively) ---
 # Added -maxdepth 5 to allow subfolders, and -type f for files only
-LIST=$(find "$SEARCH_PATH" -maxdepth 5 -type f \( \
+LIST=$(find -L "$SEARCH_PATH" -maxdepth 5 -type f \( \
     -iname "*.jpg" -o \
     -iname "*.jpeg" -o \
     -iname "*.png" -o \

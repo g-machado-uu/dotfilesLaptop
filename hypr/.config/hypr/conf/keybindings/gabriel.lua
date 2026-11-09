@@ -35,7 +35,6 @@ hl.bind(
 	hl.dsp.exec_cmd("~/.config/quickshell/SysMonitor/sysmonitor.sh"),
 	{ description = "Toggle the bubble system monitor" }
 )
-
 -- fr keyboard layout setup
 local is_fr = false
 local f = io.open(os.getenv("HOME") .. "/.config/hypr/input.lua", "r")
@@ -165,6 +164,16 @@ hl.bind(
 	{ description = "Toggle animations" }
 )
 hl.bind(mainMod .. " + PRINT", hl.dsp.exec_cmd("flameshot gui"), { description = "Take a screenshot with Flameshot" })
+-- hl.bind(
+-- 	mainMod .. " + PRINT",
+-- 	hl.dsp.exec_cmd("~/.config/hypr/scripts/screenshot.sh"),
+-- 	{ description = "Take a screenshot" }
+-- )
+hl.bind(
+	mainMod .. " + ALT +PRINT",
+	hl.dsp.exec_cmd("slurp | grim -g - - | wl-copy --type image/png"),
+	{ description = "Copy area screenshot to clipboard" }
+)
 hl.bind(
 	mainMod .. " + ALT + F",
 	hl.dsp.exec_cmd("~/.config/hypr/scripts/screenshot.sh --instant"),
@@ -274,6 +283,9 @@ hl.bind(
 	{ description = "Open Select Window Menu" }
 )
 
+-- Example special workspace (scratchpad)
+hl.bind(mainMod .. " + S", hl.dsp.workspace.toggle_special("magic"), { description = "Toggle special workspace magic" })
+
 -- Settings panel
 hl.bind(
 	mainMod .. " + SHIFT + S",
@@ -287,6 +299,7 @@ hl.bind(
 	hl.dsp.exec_cmd("qs ipc call system toggle"),
 	{ description = "Open system monitor from statusbar" }
 )
+
 -- Scroll through existing workspaces with mainMod + scroll
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }), { description = "Switch to next workspace" })
 hl.bind(mainMod .. " + mouse_up", hl.dsp.focus({ workspace = "e-1" }), { description = "Switch to previous workspace" })
@@ -321,6 +334,16 @@ hl.bind(
 	{ locked = true, repeating = true, description = "Mute microphone" }
 )
 hl.bind(
+	mainMod .. " + CTRL + M",
+	hl.dsp.exec_cmd("voxtype record start"),
+	{ description = "Start Voxtype push-to-talk" }
+)
+hl.bind(
+	mainMod .. " + CTRL + M",
+	hl.dsp.exec_cmd("voxtype record stop"),
+	{ release = true, description = "Stop Voxtype push-to-talk" }
+)
+hl.bind(
 	"XF86MonBrightnessUp",
 	hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"),
 	{ locked = true, repeating = true, description = "Increase brightness" }
@@ -330,21 +353,9 @@ hl.bind(
 	hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"),
 	{ locked = true, repeating = true, description = "Decrease brightness" }
 )
-hl.bind(
-	mainMod .. " + CTRL + M",
-	hl.dsp.exec_cmd("voxtype record toggle"),
-	{ description = "Toggles voxtype transcription" }
-)
 
 -- Requires playerctl
 hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true, description = "Next track" })
 hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true, description = "Pause audio" })
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true, description = "Play audio" })
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true, description = "Previous track" })
-
--- -- Floating bubble system monitor (CPU / RAM / GPU / VRAM / temp)
--- hl.bind(
--- 	mainMod .. " + ALT + M",
--- 	hl.dsp.exec_cmd("~/.config/quickshell/SysMonitor/sysmonitor.sh"),
--- 	{ description = "Toggle the bubble system monitor" }
--- )

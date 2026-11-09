@@ -3,7 +3,7 @@
 # Default variables
 CACHE_FOLDER="$HOME/.cache/ml4w/hyprland-dotfiles"
 CACHE_FILE="$CACHE_FOLDER/current_wallpaper"
-DEFAULT_WALLPAPER="$HOME/.config/ml4w/wallpapers/default.jpg"
+DEFAULT_WALLPAPER="$HOME/Pictures/Wallpapers/default.jpg"
 AWWW_DAEMON_VERSION="$(awww-daemon --version 2>/dev/null | awk '{ print $2 }')"
 AWWW_CACHE_FOLDER="${XDG_CACHE_HOME:-"$HOME/.cache"}/awww/$AWWW_DAEMON_VERSION"
 

@@ -12,7 +12,7 @@ MONITOR_OUTPUT=""
 AWWW_CROP_GRAVITY="center"
 CACHE_FOLDER="$HOME/.cache/ml4w/hyprland-dotfiles"
 CACHE_FILE="$CACHE_FOLDER/current_wallpaper"
-DEFAULT_WALLPAPER="$HOME/.config/ml4w/wallpapers/default.jpg"
+DEFAULT_WALLPAPER="$HOME/Pictures/Wallpapers/default.jpg"
 BLURRED_WALLPAPER="$CACHE_FOLDER/blurred_wallpaper.png"
 SQUARE_WALLPAPER="$CACHE_FOLDER/square_wallpaper.png"
 RASI_FILE="$CACHE_FOLDER/current_wallpaper.rasi"
@@ -179,7 +179,7 @@ while [[ $# -gt 0 ]]; do
             if [[ ! -d "$RANDOM_FOLDER" ]]; then
                 error "Directory does not exist -> $RANDOM_FOLDER"; exit 1
             fi
-            IMAGE_PATH=$(find "$RANDOM_FOLDER" -maxdepth 1 -type f \
+            IMAGE_PATH=$(find -L "$RANDOM_FOLDER" -maxdepth 1 -type f \
                 \( -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" \) | shuf -n 1)
             [[ -z "$IMAGE_PATH" ]] && { error "No valid images found in -> $RANDOM_FOLDER"; exit 1; }
             info "Random wallpaper selected: $IMAGE_PATH" ;;
