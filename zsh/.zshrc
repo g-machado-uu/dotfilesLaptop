@@ -13,7 +13,14 @@ export PATH=$PATH:/home/gabriel/texlive/bin/x86_64-linux/
 export INFOPATH=$INFOPATH:/home/gabriel/texlive/texmf-dist/doc/info
 export MANPATH=$MANPATH:/home/gabriel/texlive/texmf-dist/doc/man
 
-
+# -----------------------------------------------------
+# Set-up vim motions
+# -----------------------------------------------------
+bindkey -v
+export KEYTIMEOUT=1
+autoload -Uz edit-command-line; zle -N edit-command-line
+bindkey -M vicmd 'v' edit-command-line   # press v in normal mode → opens nvim
+bindkey -M viins '^v' edit-command-line  # optional: keep Ctrl+V in insert mode too
 # -----------------------------------------------------
 # Set-up FZF key bindings (CTRL R for fuzzy history finder)
 # -----------------------------------------------------
@@ -39,8 +46,6 @@ zstyle ':completion:*' menu no
 zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
 
-autoload edit-command-line; zle -N edit-command-line
-bindkey '^v' edit-command-line
 # -----------------------------------------------------
 # Prompt
 # -----------------------------------------------------

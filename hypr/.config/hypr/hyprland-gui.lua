@@ -6,6 +6,9 @@ hl.env("XCURSOR_SIZE", "24")
 
 -- Settings
 hl.config({
+    dwindle = {
+        force_split = 2,
+    },
     general = {
         col = {
             active_border = {
@@ -14,7 +17,7 @@ hl.config({
             },
         },
         gaps_in = 4,
-        gaps_out = 13,
+        gaps_out = 8,
     },
     input = {
         accel_profile = "flat",
@@ -27,9 +30,17 @@ hl.config({
 
 -- Monitors
 hl.monitor({
-    output = "DP-1",
+    output = "DP-5",
     disabled = false,
-    mode = "3440x1440@74.98Hz",
+    mode = "1920x1080@60.00Hz",
+    position = "-1920x0",
+    scale = 1,
+    cm = "srgb",
+})
+hl.monitor({
+    output = "eDP-1",
+    disabled = false,
+    mode = "1920x1080@60.05Hz",
     position = "0x0",
     scale = 1,
     cm = "srgb",
