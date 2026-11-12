@@ -1,2 +1,2 @@
-local name = "animations-dynamic.lua"
+local name = "default.lua"
 load_variant(name,"animations")

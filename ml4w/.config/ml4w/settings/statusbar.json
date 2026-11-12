@@ -28,6 +28,8 @@
     },
     "weather": {
         "location": "Belfast, UK",
-        "desktopWidget": true
+        "desktopWidget": true,
+        "widgetScale": 0.85,
+        "showDelay": 600
     }
 }
