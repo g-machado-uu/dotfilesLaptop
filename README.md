@@ -36,6 +36,12 @@ Firefox.
 
 ![Wallpaper picker](docs/img/wallpaper-panel.jpg)
 
+The application launcher (`SUPER + CTRL + RETURN`, or the launcher icon in the
+bar) drops from the bar like the other panels. It lists the installed
+applications with their icons and filters them as you type.
+
+![Application launcher](docs/img/launcher.png)
+
 ## Repository structure
 
 Each top level directory is a Stow package whose contents mirror the home
@@ -208,6 +214,13 @@ speed by 10 knots or more. `QNH` is the pressure at mean sea level in hPa.
 The text colour is chosen from the brightness of the wallpaper behind the
 widget, independently of the light or dark palette selected by matugen.
 
+The size of the widget and its return delay are set in the Statusbar tab of the
+Settings panel (`weather.widgetScale` and `weather.showDelay` in
+`statusbar.json`). The delay is the time a workspace must stay empty before the
+widget comes back out. It prevents the widget from bouncing in and out while an
+application that briefly closes its window during start-up is loading. The
+widget is still absorbed into the bar without delay.
+
 The location is set in any of three places:
 
 * the Statusbar tab of the Settings panel
@@ -230,7 +243,8 @@ with `qs ipc call settings toggle`. It has four tabs.
 * **Default apps:** terminal, browser, email client, file manager, network and
   Bluetooth managers, software manager, calculator, screenshot editor, system
   monitor and AUR helper.
-* **Statusbar:** weather location.
+* **Statusbar:** weather location, and the size and return delay of the time
+  and weather widget.
 * **System:** keybinding, monitor, environment and window rule variants.
 
 The entries are defined in
@@ -251,12 +265,13 @@ source is `hypr/.config/hypr/conf/keybindings/gabriel.lua`.
 | `SUPER + CTRL + F` | Firefox |
 | `SUPER + E` | File manager |
 | `SUPER + CTRL + RETURN` | Application launcher |
+| `SUPER + TAB` | Workspace overview |
 | `SUPER + SPACE` | Expand the bar and give it keyboard focus |
 | `SUPER + CTRL + S` | Control centre |
 | `SUPER + SHIFT + S` | Settings panel |
 | `SUPER + CTRL + W` | Wallpaper picker |
 | `SUPER + V` | Clipboard history |
-| `SUPER + ALT + M` | Floating system monitor |
+| `SUPER + ALT + M` | System monitor panel |
 | `SUPER + SHIFT + M` | Toggle light and dark mode |
 | `SUPER + CTRL + M` | Voxtype dictation, held while speaking |
 | `SUPER + CTRL + P` | Power menu |
@@ -265,6 +280,30 @@ source is `hypr/.config/hypr/conf/keybindings/gabriel.lua`.
 | `SUPER + ALT + F` | Full screen screenshot |
 | `SUPER + ALT + S` | Area screenshot |
 | `SUPER + ALT + A` | Text extraction from an area (tesseract) |
+
+## Application launcher
+
+The launcher replaces rofi's `drun` mode. It reads the same `.desktop` files
+through Quickshell, so it lists the same applications. The source is
+`quickshell/.config/quickshell/LauncherApp/LauncherPanel.qml`.
+
+* **Search:** names that start with the query rank first, then words in the
+  name that start with it, then the generic name and keywords, then the
+  description. Letters typed in order also match, so `vsc` finds Visual Studio
+  Code.
+* **Most used first:** each launch is counted in
+  `~/.local/state/quickshell/by-shell/<id>/launcher-usage.json`. The most used
+  applications head the list when the search is empty and are ranked higher in
+  the results.
+* **Keys:** `Up` and `Down`, `Tab` and `Shift + Tab`, or `Ctrl + J` and
+  `Ctrl + K` move the selection. `Page Up` and `Page Down` move eight entries.
+  `Return` launches and `Escape` closes.
+* **Terminal applications** are opened in the terminal set in the Default apps
+  tab of the Settings panel.
+
+The launcher is also opened with `qs ipc call launcher toggle`. Rofi remains
+installed for the screenshot, OCR and keybinding menus, and
+`hypr/.config/hypr/scripts/launcher.sh` still opens its launcher.
 
 ## Power menu and screen lock
 
@@ -309,7 +348,7 @@ pending notifications and opens the swaync window.
 
 * the settings application, by the Settings panel
 * `ml4w-power`, by `hyprshutdown`
-* the launcher script, by rofi
+* the launcher script, by the Quickshell launcher
 * the status bar toggle and reload scripts, by Quickshell IPC calls
 
 **Modified**
@@ -329,6 +368,7 @@ pending notifications and opens the swaync window.
 * the Quickshell bar and its panels
 * the keyboard layout indicator
 * the time and weather widget
+* the application launcher
 * the keybindings and the fluidDrop animation
 * the window rules, and the hypridle, kitty, fastfetch, nvim, vim, tmux and
   voxtype configurations
@@ -355,6 +395,8 @@ baseline.
 * **Fira Sans:** SIL Open Font License
   (`fonts/.local/share/fonts/Fira_Sans/OFL.txt`).
 * **ArcStarry cursors:** GPL 3.0.
-* **`quickshell/overview`:** a separate project with its own README.
+* **`quickshell/overview`:** a separate project with its own README. The main
+  shell loads it on demand instead of running it as a second Quickshell
+  process.
 * **qylock** by Darkkal44, the lock screen. Installed separately, not
   redistributed here.
