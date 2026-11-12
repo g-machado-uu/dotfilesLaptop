@@ -30,10 +30,10 @@ hl.config({
 
 -- Monitors
 hl.monitor({
-    output = "DP-5",
+    output = "DP-6",
     disabled = false,
     mode = "1920x1080@60.00Hz",
-    position = "-1920x0",
+    position = "1920x0",
     scale = 1,
     cm = "srgb",
 })
@@ -41,7 +41,7 @@ hl.monitor({
     output = "eDP-1",
     disabled = false,
     mode = "1920x1080@60.05Hz",
-    position = "0x0",
+    position = "3840x0",
     scale = 1,
     cm = "srgb",
 })
