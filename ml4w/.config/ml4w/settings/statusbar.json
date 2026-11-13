@@ -6,10 +6,11 @@
     "modules": {
         "left": [
             "workspaces",
-            "terminal"
+            "terminal",
+            "media",
+            "notificationticker"
         ],
         "center": [
-            "media",
             "launcher",
             "clock",
             "calendar",
@@ -31,5 +32,12 @@
         "desktopWidget": true,
         "widgetScale": 0.85,
         "showDelay": 600
+    },
+    "notifications": {
+        "spawnDuration": 320,
+        "tickerWidth": 150
+    },
+    "media": {
+        "titleWidth": 90
     }
 }

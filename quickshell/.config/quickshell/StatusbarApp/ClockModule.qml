@@ -7,6 +7,20 @@ import qs.CustomTheme
 // volume readouts so the whole bar reads as a single row of text. The date is
 // revealed when the bar expands and folds away again when it collapses, so the
 // collapsed pill stays as narrow as it was.
+//
+// The hairline rule between the time and the date sits exactly at the centre of
+// the screen. Both fields are sized to their own text, so the rule sits as far
+// left of this module's centre as the date is wider than the time; the module
+// reports that difference as `inkSlack`, and the bar's centre group pads its
+// own left end by it, which slides the rule back onto the centre line.
+//
+// An earlier version centred the rule by giving both fields a cell of the same
+// width — the wider of the two. That put the rule on the centre line too, but
+// it did it by leaving the difference as blank space in front of the time,
+// inside this module, which pushed the launcher button a date's-worth further
+// from the time than the control centre is from the date. The space is the same
+// either way; outside the module it is invisible, and the group reads as
+// symmetric.
 Item {
     id: clockRoot
 
@@ -79,21 +93,45 @@ Item {
         }
     }
 
+    // How far the rule sits left of this module's centre, in pixels, and so
+    // how much the bar has to pad the left end of its centre group to put the
+    // rule back on the centre line. Signed: negative if a time format is ever
+    // wider than its date format, which pads the right end instead.
+    //
+    // Scaled by how far the date is out rather than read from the live cell
+    // width, so that it animates with the reveal and keeps its sign the whole
+    // way instead of crossing zero as the cell passes the time's width. Goes
+    // to zero with the fold, because a folded module has no rule to centre.
+    readonly property real dateReveal: dateText.implicitWidth > 0
+        ? dateCell.implicitWidth / dateText.implicitWidth : 0
+    readonly property real inkSlack:
+        (dateText.implicitWidth - timeText.implicitWidth)
+        * clockRoot.dateReveal * (1 - clockRoot.fold)
+
     RowLayout {
         id: row
         anchors.centerIn: parent
         spacing: 0
 
-        Text {
-            id: timeText
+        // The time, hugging its own text: the rule is centred by the bar's
+        // padding, not by blank space in here.
+        Item {
             Layout.alignment: Qt.AlignVCenter
-            text: Qt.formatDateTime(clock.date, clockRoot.timeFormat)
-            color: Theme.primary
-            font.family: Theme.fontFamily
-            font.pixelSize: 14
-            font.bold: true
-            // Tabular digits: "11:11" and "08:08" take the same width.
-            font.features: { "tnum": 1 }
+            implicitWidth: timeText.implicitWidth
+            implicitHeight: timeText.implicitHeight
+
+            Text {
+                id: timeText
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                text: Qt.formatDateTime(clock.date, clockRoot.timeFormat)
+                color: Theme.primary
+                font.family: Theme.fontFamily
+                font.pixelSize: 14
+                font.bold: true
+                // Tabular digits: "11:11" and "08:08" take the same width.
+                font.features: { "tnum": 1 }
+            }
         }
 
         // A hairline rule rather than punctuation: it separates the two fields
@@ -124,6 +162,7 @@ Item {
 
         // The date, folded to zero width (and clipped) while collapsed.
         Item {
+            id: dateCell
             Layout.alignment: Qt.AlignVCenter
             implicitWidth: clockRoot.expanded ? dateText.implicitWidth : 0
             implicitHeight: dateText.implicitHeight
