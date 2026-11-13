@@ -96,6 +96,23 @@ alias ml4w-hyprland='flatpak run com.ml4w.hyprlandsettings'
 alias ml4w-sidebar='qs ipc call controlcentre toggle'
 
 # -----------------------------------------------------
+# Diffs
+# -----------------------------------------------------
+
+alias diff='diff --color=auto'
+alias diffu='diff -uN --color=always'
+# Side by side, only the lines that differ, sized to the terminal
+alias diffy='diff -y --suppress-common-lines --color=always -W $COLUMNS'
+# Just say which files differ
+alias diffq='diff -rq'
+# Recursive unified diff of two folders, skipping .git
+alias diffr='diff -ruN --color=always -x .git'
+# Git's diff for any two files (colour + pager), even outside a repo
+alias gdiff='git diff --no-index'
+# Open both files in Neovim's diff mode
+alias vdiff='nvim -d'
+
+# -----------------------------------------------------
 # Scripts
 # -----------------------------------------------------
 alias ascii='~/.config/ml4w/scripts/figlet.sh'
